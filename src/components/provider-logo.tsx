@@ -1,11 +1,11 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-// Mono = raw SVG path only, no @lobehub/ui or antd-style dependency
-import OpenAI from "@lobehub/icons/es/OpenAI";
-import Anthropic from "@lobehub/icons/es/Anthropic";
-import OpenRouter from "@lobehub/icons/es/OpenRouter";
-import Gemini from "@lobehub/icons/es/Gemini";
+// Import Mono directly to avoid the barrel re-exporting Avatar (which needs @lobehub/ui)
+import OpenAIMono from "@lobehub/icons/es/OpenAI/components/Mono";
+import AnthropicMono from "@lobehub/icons/es/Anthropic/components/Mono";
+import OpenRouterMono from "@lobehub/icons/es/OpenRouter/components/Mono";
+import GeminiMono from "@lobehub/icons/es/Gemini/components/Mono";
 
 interface ProviderLogoProps {
   provider: "openrouter" | "openai" | "anthropic" | "gemini";
@@ -15,19 +15,22 @@ interface ProviderLogoProps {
 
 // Brand bg/fg sourced from each provider's style.js constants
 const PROVIDER_STYLES = {
-  openai:     { bg: "#000000", fg: "#ffffff" },
-  anthropic:  { bg: "#F1F0E8", fg: "#141413" },
-  openrouter: { bg: "#6566F1", fg: "#ffffff" },
-  gemini:     { bg: "#ffffff", fg: "#4285F4", border: true },
+  openai:     { bg: "#000000", fg: "#ffffff", border: false },
+  anthropic:  { bg: "#F1F0E8", fg: "#141413", border: false },
+  openrouter: { bg: "#6566F1", fg: "#ffffff", border: false },
+  gemini:     { bg: "#ffffff", fg: "#4285F4", border: true  },
 } as const;
+
+const ICONS = {
+  openai:     OpenAIMono,
+  anthropic:  AnthropicMono,
+  openrouter: OpenRouterMono,
+  gemini:     GeminiMono,
+};
 
 export function ProviderLogo({ provider, size = 32, className }: ProviderLogoProps) {
   const style = PROVIDER_STYLES[provider];
-  const iconSize = size * 0.6;
-  const radius = size * 0.2;
-
-  // Each default export IS the Mono component (CompoundedIcon = typeof Mono & {...})
-  const Icon = { openai: OpenAI, anthropic: Anthropic, openrouter: OpenRouter, gemini: Gemini }[provider];
+  const Icon = ICONS[provider];
 
   return (
     <span
@@ -35,14 +38,14 @@ export function ProviderLogo({ provider, size = 32, className }: ProviderLogoPro
       style={{
         width: size,
         height: size,
-        borderRadius: radius,
+        borderRadius: size * 0.2,
         background: style.bg,
         color: style.fg,
-        border: "border" in style ? "1px solid #e5e7eb" : undefined,
+        border: style.border ? "1px solid #e5e7eb" : undefined,
         flexShrink: 0,
       }}
     >
-      <Icon size={iconSize} />
+      <Icon size={size * 0.6} />
     </span>
   );
 }

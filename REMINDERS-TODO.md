@@ -44,6 +44,12 @@ Both providers are wired in the code. You just need to register the apps and pas
 
 ---
 
+## Marketing Tagline Ideas
+
+> "1 minute, a couple cents each month, clean conscience, cleaner earth."
+
+---
+
 ## Production Payment Rail (Every.org)
 
 - Sign up at every.org for a Partner API key

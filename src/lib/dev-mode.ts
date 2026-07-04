@@ -20,10 +20,10 @@ export const DEV_PROFILE = {
 };
 
 export const DEV_CHARITIES = [
-  { id: "charity-1", name: "Clean Air Task Force", description: "Accelerating zero-carbon energy through policy and innovation.", category: "climate", url: "https://www.catf.us" },
-  { id: "charity-2", name: "Carbon180",            description: "Scaling carbon removal solutions.",                           category: "climate", url: "https://carbon180.org" },
-  { id: "charity-3", name: "Rewiring America",     description: "Electrifying everything to slash household emissions.",       category: "energy",  url: "https://www.rewiringamerica.org" },
-  { id: "charity-4", name: "Cool Earth",           description: "Protecting rainforest with local communities.",               category: "nature",  url: "https://www.coolearth.org" },
-  { id: "charity-5", name: "Coalition for Rainforest Nations", description: "REDD+ financing to reduce deforestation.",       category: "nature",  url: "https://www.rainforestcoalition.org" },
-  { id: "charity-6", name: "Founders Pledge Climate Fund",     description: "Top-recommended charities by expert researchers.", category: "climate", url: "https://founderspledge.com/funds/climate-change-fund" },
+  { id: "charity-1", name: "Clean Air Task Force",          description: "Accelerating zero-carbon energy through policy and innovation.", category: "climate", url: "https://www.catf.us",                                             everyOrgSlug: "clean-air-task-force" },
+  { id: "charity-2", name: "Carbon180",                     description: "Scaling carbon removal solutions.",                              category: "climate", url: "https://carbon180.org",                                           everyOrgSlug: "carbon-180" },
+  { id: "charity-3", name: "Rewiring America",              description: "Electrifying everything to slash household emissions.",          category: "energy",  url: "https://www.rewiringamerica.org",                                 everyOrgSlug: "rewiring-america" },
+  { id: "charity-4", name: "Cool Earth",                    description: "Protecting rainforest with local communities.",                  category: "nature",  url: "https://www.coolearth.org",                                      everyOrgSlug: "cool-earth" },
+  { id: "charity-5", name: "Coalition for Rainforest Nations", description: "REDD+ financing to reduce deforestation.",                   category: "nature",  url: "https://www.rainforestcoalition.org",                            everyOrgSlug: "coalition-for-rainforest-nations" },
+  { id: "charity-6", name: "Founders Pledge Climate Fund",  description: "Top-recommended charities by expert researchers.",              category: "climate", url: "https://founderspledge.com/funds/climate-change-fund",           everyOrgSlug: "giving-green-fund" },
 ];

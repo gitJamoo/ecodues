@@ -6,6 +6,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { connectorFor } from "./providers";
 import { tierById } from "./emissions/tiers";
 import { decryptSecret } from "./crypto";
+import { createCheckout, directLink } from "./every-org";
 
 export interface UsageRecordLike {
   id: string;
@@ -52,6 +53,9 @@ export async function runMonthlyCycleForUser(
   const periodDate = periodDateString(period);
 
   const { data: profile } = await supabase.from("profiles").select("multiplier, charity_id").eq("id", userId).single();
+  const { data: charity } = profile?.charity_id
+    ? await supabase.from("charities").select("every_org_slug").eq("id", profile.charity_id).single()
+    : { data: null };
   const { data: connections } = await supabase.from("provider_connections").select("*").eq("user_id", userId);
 
   // Refresh API + tier usage (manual rows stay)
@@ -103,14 +107,25 @@ export async function runMonthlyCycleForUser(
     })));
   }
 
-  // Simulated ledger row (swap this call for Every.org API in production)
+  // Build Every.org checkout — real API call when EVERY_ORG_PARTNER_KEY is set,
+  // otherwise falls back to a pre-filled direct link (no Partner key needed).
+  const slug = (charity as { every_org_slug?: string } | null)?.every_org_slug ?? null;
+  const partnerDonationId = `${userId}:${periodDate}`;
+  const checkout = slug && result.donationUsd > 0
+    ? await createCheckout({ nonprofitSlug: slug, amountUsd: result.donationUsd, partnerDonationId })
+    : null;
+  const checkoutLink = checkout?.checkoutLink
+    ?? (slug && result.donationUsd > 0 ? directLink(slug, result.donationUsd) : null);
+
   await supabase.from("donation_ledger").upsert({
     user_id: userId, period: periodDate,
     damage_usd: result.totalDamageUsd,
     multiplier: Number(profile?.multiplier ?? 2),
     donation_usd: result.donationUsd,
     charity_id: profile?.charity_id ?? null,
-    status: "simulated",
+    checkout_link: checkoutLink,
+    checkout_token: checkout?.checkoutToken ?? null,
+    status: checkoutLink ? "pending" : "simulated",
   }, { onConflict: "user_id,period" });
 
   return result;
