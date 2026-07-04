@@ -8,7 +8,6 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { MultiplierSlider } from "@/components/multiplier-slider";
 import { CharityPicker } from "@/components/charity-picker";
-import { CardFormStub } from "@/components/card-form-stub";
 import { saveSettings } from "@/lib/actions";
 import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
@@ -17,7 +16,6 @@ interface Profile {
   display_name: string | null;
   multiplier: number;
   charity_id: string | null;
-  card_last4: string | null;
 }
 interface Charity { id: string; name: string; description: string; category: string; url?: string }
 
@@ -69,13 +67,11 @@ export function SettingsForm({ profile, charities, totalDamageUsd }: {
       <Separator />
 
       <div>
-        <Label className="mb-1 block">Payment method</Label>
-        {profile?.card_last4 ? (
-          <p className="text-sm text-muted-foreground mb-3">Card on file: •••• {profile.card_last4}</p>
-        ) : (
-          <p className="text-sm text-muted-foreground mb-3">No card on file</p>
-        )}
-        <CardFormStub />
+        <Label className="mb-1 block">How payment works</Label>
+        <p className="text-sm text-muted-foreground">
+          On the 1st of each month we email you a one-click Every.org checkout link at your chosen multiplier.
+          You pay directly on Every.org and get a tax receipt — EcoDues never touches your money and never charges you automatically.
+        </p>
       </div>
 
       <Separator />

@@ -6,12 +6,12 @@ import { Button } from "@/components/ui/button";
 import { ProviderConnect } from "@/components/provider-connect";
 import { CharityPicker } from "@/components/charity-picker";
 import { MultiplierSlider } from "@/components/multiplier-slider";
-import { CardFormStub } from "@/components/card-form-stub";
 import { saveSettings, completeOnboarding } from "@/lib/actions";
 import { toast } from "sonner";
 import { usd } from "@/lib/format";
+import { Mail, ExternalLink, ShieldCheck } from "lucide-react";
 
-const STEPS = ["Connect usage", "Charity & multiplier", "Add card"];
+const STEPS = ["Connect usage", "Charity & multiplier", "How you'll pay"];
 
 interface Charity { id: string; name: string; description: string; category: string }
 
@@ -92,13 +92,30 @@ export function OnboardingWizard({ charities }: { charities: Charity[] }) {
 
           {step === 2 && (
             <>
-              <h2 className="font-semibold text-base mb-1">Add a payment method</h2>
-              <p className="text-sm text-muted-foreground mb-5">Used for the monthly donation on the 1st of each month.</p>
-              <CardFormStub onDone={handleFinish} />
-              <div className="flex gap-3 mt-4">
-                <Button variant="ghost" onClick={() => setStep(1)} className="flex-1 text-sm">Back</Button>
-                <Button variant="ghost" onClick={handleFinish} disabled={finishing} className="flex-1 text-sm text-muted-foreground">
-                  {finishing ? "Setting up…" : "Skip for now"}
+              <h2 className="font-semibold text-base mb-1">You&apos;ll get an email with a one-click Every.org link</h2>
+              <p className="text-sm text-muted-foreground mb-5">
+                On the 1st of each month we email you a pre-filled Every.org checkout at 2× your estimated damage. You click, you pay, you get a tax receipt. EcoDues never touches your money.
+              </p>
+
+              <ul className="space-y-3 text-sm mb-6">
+                <li className="flex items-start gap-3">
+                  <Mail className="w-4 h-4 mt-0.5 text-primary shrink-0" />
+                  <span><span className="font-medium">Monthly email.</span> Sent on the 1st with the amount and a single &ldquo;Pay via Every.org&rdquo; button.</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <ExternalLink className="w-4 h-4 mt-0.5 text-primary shrink-0" />
+                  <span><span className="font-medium">Every.org handles the card.</span> A 501(c)(3) that issues a tax-deductible receipt and routes funds to your charity.</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <ShieldCheck className="w-4 h-4 mt-0.5 text-primary shrink-0" />
+                  <span><span className="font-medium">No auto-charges.</span> Nothing is billed automatically — you always choose whether to pay.</span>
+                </li>
+              </ul>
+
+              <div className="flex gap-3">
+                <Button variant="outline" onClick={() => setStep(1)} className="flex-1">Back</Button>
+                <Button onClick={handleFinish} disabled={finishing} className="flex-1">
+                  {finishing ? "Finishing…" : "Finish setup"}
                 </Button>
               </div>
             </>
