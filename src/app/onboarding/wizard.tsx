@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ProviderConnect } from "@/components/provider-connect";
@@ -13,12 +14,26 @@ import { Mail, ExternalLink, ShieldCheck } from "lucide-react";
 
 const STEPS = ["Connect usage", "Charity & multiplier", "How you'll pay"];
 
-interface Charity { id: string; name: string; description: string; category: string }
+interface Charity {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  paypalGivingFundUrl?: string | null;
+  paypal_giving_fund_url?: string | null;
+}
+
+function isPpgf(c: Charity): boolean {
+  return !!(c.paypalGivingFundUrl ?? c.paypal_giving_fund_url);
+}
 
 export function OnboardingWizard({ charities }: { charities: Charity[] }) {
   const router = useRouter();
   const [step, setStep] = useState(0);
-  const [charityId, setCharityId] = useState<string | null>(null);
+  // Default to the first PPGF-enrolled charity so new users land on the
+  // premier (100% pass-through) option. Fall back to whatever's first.
+  const defaultCharityId = charities.find(isPpgf)?.id ?? charities[0]?.id ?? null;
+  const [charityId, setCharityId] = useState<string | null>(defaultCharityId);
   const [multiplier, setMultiplier] = useState(2);
   const [finishing, setFinishing] = useState(false);
 
@@ -75,7 +90,10 @@ export function OnboardingWizard({ charities }: { charities: Charity[] }) {
           {step === 1 && (
             <>
               <h2 className="font-semibold text-base mb-1">Choose your charity & multiplier</h2>
-              <p className="text-sm text-muted-foreground mb-5">Pick where your donations go and how much you want to offset.</p>
+              <p className="text-sm text-muted-foreground mb-1">Pick where your donations go and how much you want to offset.</p>
+              <p className="text-xs text-muted-foreground mb-5">
+                Not sure? Just pick something — you can change your charity, multiplier, and everything else anytime in Settings.
+              </p>
               <div className="space-y-6">
                 <CharityPicker charities={charities} value={charityId} onChange={setCharityId} />
                 <div>
@@ -92,25 +110,31 @@ export function OnboardingWizard({ charities }: { charities: Charity[] }) {
 
           {step === 2 && (
             <>
-              <h2 className="font-semibold text-base mb-1">You&apos;ll get an email with a one-click Every.org link</h2>
+              <h2 className="font-semibold text-base mb-1">You&apos;ll get an email with a one-click checkout link</h2>
               <p className="text-sm text-muted-foreground mb-5">
-                On the 1st of each month we email you a pre-filled Every.org checkout at 2× your estimated damage. You click, you pay, you get a tax receipt. EcoDues never touches your money.
+                We accrue your monthly impact into a running tab. When it clears your charity&rsquo;s minimum,
+                we email you a checkout link — PayPal Giving Fund (100% pass-through) when supported, Every.org otherwise.
+                You click, you pay, you get a tax receipt. EcoDues never touches your money.
               </p>
 
               <ul className="space-y-3 text-sm mb-6">
                 <li className="flex items-start gap-3">
                   <Mail className="w-4 h-4 mt-0.5 text-primary shrink-0" />
-                  <span><span className="font-medium">Monthly email.</span> Sent on the 1st with the amount and a single &ldquo;Pay via Every.org&rdquo; button.</span>
+                  <span><span className="font-medium">Monthly email.</span> Sent when your tab reaches the charity&rsquo;s minimum, with a one-click checkout button.</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <ExternalLink className="w-4 h-4 mt-0.5 text-primary shrink-0" />
-                  <span><span className="font-medium">Every.org handles the card.</span> A 501(c)(3) that issues a tax-deductible receipt and routes funds to your charity.</span>
+                  <span><span className="font-medium">100% delivered where possible.</span> PayPal Giving Fund covers all card fees for enrolled charities. <Link href="/how-donations-work" className="underline underline-offset-2">How this works →</Link></span>
                 </li>
                 <li className="flex items-start gap-3">
                   <ShieldCheck className="w-4 h-4 mt-0.5 text-primary shrink-0" />
                   <span><span className="font-medium">No auto-charges.</span> Nothing is billed automatically — you always choose whether to pay.</span>
                 </li>
               </ul>
+
+              <p className="text-xs text-muted-foreground mb-6">
+                Change your mind later? Charity, multiplier, and usage sources all live in <span className="font-medium text-foreground">Settings</span>. Nothing here is permanent.
+              </p>
 
               <div className="flex gap-3">
                 <Button variant="outline" onClick={() => setStep(1)} className="flex-1">Back</Button>

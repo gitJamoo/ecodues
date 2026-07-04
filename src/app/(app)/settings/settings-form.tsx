@@ -17,12 +17,13 @@ interface Profile {
   multiplier: number;
   charity_id: string | null;
 }
-interface Charity { id: string; name: string; description: string; category: string; url?: string }
+interface Charity { id: string; name: string; description: string; category: string; url?: string; min_donation_usd?: number }
 
-export function SettingsForm({ profile, charities, totalDamageUsd }: {
+export function SettingsForm({ profile, charities, totalDamageUsd, tabUsd }: {
   profile: Profile | null;
   charities: Charity[];
   totalDamageUsd?: number;
+  tabUsd?: number;
 }) {
   const [name, setName] = useState(profile?.display_name ?? "");
   const [multiplier, setMultiplier] = useState(Number(profile?.multiplier ?? 2));
@@ -61,7 +62,7 @@ export function SettingsForm({ profile, charities, totalDamageUsd }: {
 
       <div>
         <Label className="mb-3 block">Charity</Label>
-        <CharityPicker charities={charities} value={charityId} onChange={setCharityId} />
+        <CharityPicker charities={charities} value={charityId} onChange={setCharityId} tabUsd={tabUsd} />
       </div>
 
       <Separator />

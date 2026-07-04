@@ -42,11 +42,28 @@ export function renderDonationEmail(opts: {
   donationUsd: number;
   charityName: string;
   checkoutLink: string;
+  provider: "ppgf" | "every_org";
 }): { subject: string; html: string; text: string } {
-  const { displayName, periodLabel, damageUsd, donationUsd, charityName, checkoutLink } = opts;
+  const { displayName, periodLabel, damageUsd, donationUsd, charityName, checkoutLink, provider } = opts;
   const usd = (n: number) => `$${n.toFixed(2)}`;
   const name = displayName?.trim() || "there";
+  const isPpgf = provider === "ppgf";
+  const providerLabel = isPpgf ? "PayPal Giving Fund" : "Every.org";
   const subject = `Your ${periodLabel} donation is ready — ${usd(donationUsd)} to ${charityName}`;
+
+  const providerLineText = isPpgf
+    ? [
+        `Donate via PayPal Giving Fund — passes 100% to the charity (PayPal covers all card fees):`,
+        checkoutLink,
+        ``,
+        `Heads up: PayPal Giving Fund does not pre-fill amounts. Please enter ${usd(donationUsd)} on the PayPal page.`,
+      ]
+    : [
+        `Pay via Every.org (secure, tax-deductible receipt) — the amount is pre-filled:`,
+        checkoutLink,
+        ``,
+        `Tip: check the "cover the fees" box on Every.org so 100% reaches the charity.`,
+      ];
 
   const text = [
     `Hi ${name},`,
@@ -54,14 +71,28 @@ export function renderDonationEmail(opts: {
     `Your AI usage for ${periodLabel} caused about ${usd(damageUsd)} in climate damage.`,
     `Suggested donation this month: ${usd(donationUsd)} to ${charityName}.`,
     ``,
-    `Pay via Every.org (secure, tax-deductible receipt):`,
-    checkoutLink,
+    ...providerLineText,
     ``,
-    `EcoDues never touches your money — Every.org is a 501(c)(3) that processes the`,
-    `card and routes funds to the nonprofit directly.`,
+    `EcoDues never touches your money — ${providerLabel} processes the payment`,
+    `and routes funds to the nonprofit directly, with a tax-deductible receipt.`,
     ``,
     `— EcoDues`,
   ].join("\n");
+
+  const ppgfNoticeHtml = isPpgf
+    ? `<div style="margin:0 0 20px;padding:12px 14px;border-radius:8px;background:#fff8e6;border:1px solid #f5d67a;font-size:12px;line-height:1.5;color:#7a5a10">
+          <strong style="color:#5a4408">Enter ${usd(donationUsd)} on the PayPal page.</strong>
+          PayPal Giving Fund doesn&rsquo;t pre-fill donation amounts — you&rsquo;ll need to type it in.
+        </div>`
+    : `<div style="margin:0 0 20px;padding:12px 14px;border-radius:8px;background:#eef5ee;border:1px solid #c5dbc5;font-size:12px;line-height:1.5;color:#3a4a3a">
+          Check the <strong>&ldquo;cover the fees&rdquo;</strong> box on Every.org so 100% reaches ${escapeHtml(charityName)}.
+        </div>`;
+
+  const buttonBg = isPpgf ? "#003087" : "#1f5a2f";
+  const buttonLabel = isPpgf ? "Donate via PayPal (100%) →" : "Pay via Every.org →";
+  const feeLine = isPpgf
+    ? `${escapeHtml(providerLabel)} is a 501(c)(3) that receives your gift and grants it to ${escapeHtml(charityName)}. PayPal absorbs all card processing — 100% reaches the charity.`
+    : `Every.org is a 501(c)(3) that processes the payment and issues a tax-deductible receipt.`;
 
   const html = `<!doctype html>
 <html><body style="margin:0;padding:0;background:#f6f7f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#1a1a1a">
@@ -74,10 +105,10 @@ export function renderDonationEmail(opts: {
           <p style="margin:0 0 20px;font-size:15px;line-height:1.55;color:#4a5a4a">
             Hi ${escapeHtml(name)} — your AI usage this month caused an estimated
             <strong style="color:#1a1a1a">${usd(damageUsd)}</strong> in climate damage.
-            Here&rsquo;s a one-click way to offset it.
+            Here&rsquo;s a one-click way to offset it via <strong>${escapeHtml(providerLabel)}</strong>.
           </p>
 
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f0f5f0;border-radius:8px;margin:0 0 24px">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f0f5f0;border-radius:8px;margin:0 0 20px">
             <tr><td style="padding:20px 24px">
               <div style="font-size:13px;color:#5a6b5a;margin-bottom:4px">Donation this cycle</div>
               <div style="font-size:32px;font-weight:600;color:#1f5a2f;letter-spacing:-0.02em">${usd(donationUsd)}</div>
@@ -85,11 +116,157 @@ export function renderDonationEmail(opts: {
             </td></tr>
           </table>
 
-          <a href="${escapeAttr(checkoutLink)}" style="display:inline-block;background:#1f5a2f;color:#ffffff;text-decoration:none;font-weight:600;font-size:15px;padding:14px 24px;border-radius:8px">Pay via Every.org →</a>
+          ${ppgfNoticeHtml}
+
+          <a href="${escapeAttr(checkoutLink)}" style="display:inline-block;background:${buttonBg};color:#ffffff;text-decoration:none;font-weight:600;font-size:15px;padding:14px 24px;border-radius:8px">${buttonLabel}</a>
 
           <p style="margin:24px 0 0;font-size:12px;line-height:1.55;color:#7a8a7a">
-            Every.org is a 501(c)(3) that processes the payment and issues a tax-deductible receipt.
-            EcoDues never touches your money. This link is unique to you.
+            ${feeLine} EcoDues never touches your money. This link is unique to you.
+          </p>
+        </td></tr>
+      </table>
+      <div style="max-width:560px;font-size:11px;color:#9aa89a;margin-top:16px;text-align:center">
+        Sent by EcoDues · offset your AI footprint
+      </div>
+    </td></tr>
+  </table>
+</body></html>`;
+
+  return { subject, html, text };
+}
+
+export function renderMonthlyRecap(opts: {
+  displayName: string | null;
+  periodLabel: string;
+  damageUsd: number;
+  addedToTabUsd: number;
+  tabUsd: number;
+  charityName: string;
+  minDonationUsd: number;
+}): { subject: string; html: string; text: string } {
+  const { displayName, periodLabel, damageUsd, addedToTabUsd, tabUsd, charityName, minDonationUsd } = opts;
+  const usd = (n: number) => `$${n.toFixed(2)}`;
+  const name = displayName?.trim() || "there";
+  const remaining = Math.max(0, minDonationUsd - tabUsd);
+  const pct = Math.min(100, Math.round((tabUsd / minDonationUsd) * 100));
+  const subject = `Your ${periodLabel} footprint — ${usd(tabUsd)} in the tank`;
+
+  const text = [
+    `Hi ${name},`,
+    ``,
+    `Your AI usage for ${periodLabel} caused about ${usd(damageUsd)} in climate damage.`,
+    `Added ${usd(addedToTabUsd)} to your offset tab — total balance is now ${usd(tabUsd)}.`,
+    ``,
+    `You need ${usd(remaining)} more before you can donate to ${charityName} (${usd(minDonationUsd)} minimum).`,
+    `We'll email you a one-click Every.org link the moment you cross that line.`,
+    ``,
+    `— EcoDues`,
+  ].join("\n");
+
+  const html = `<!doctype html>
+<html><body style="margin:0;padding:0;background:#f6f7f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#1a1a1a">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding:32px 16px">
+    <tr><td align="center">
+      <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e5e7e5">
+        <tr><td style="padding:32px 32px 24px">
+          <div style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:#5a6b5a;margin-bottom:8px">EcoDues · ${escapeHtml(periodLabel)}</div>
+          <h1 style="margin:0 0 12px;font-size:22px;font-weight:600;letter-spacing:-0.01em">Building up your offset tab</h1>
+          <p style="margin:0 0 20px;font-size:15px;line-height:1.55;color:#4a5a4a">
+            Hi ${escapeHtml(name)} — this month&rsquo;s AI usage caused an estimated
+            <strong style="color:#1a1a1a">${usd(damageUsd)}</strong> in climate damage.
+            We added <strong>${usd(addedToTabUsd)}</strong> to your tab.
+          </p>
+
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f0f5f0;border-radius:8px;margin:0 0 20px">
+            <tr><td style="padding:20px 24px">
+              <div style="font-size:13px;color:#5a6b5a;margin-bottom:4px">Tab balance</div>
+              <div style="font-size:32px;font-weight:600;color:#1f5a2f;letter-spacing:-0.02em">${usd(tabUsd)}</div>
+              <div style="font-size:13px;color:#5a6b5a;margin-top:6px">${usd(remaining)} to go before you can donate to ${escapeHtml(charityName)}</div>
+              <div style="margin-top:12px;height:6px;background:#dfe8df;border-radius:3px;overflow:hidden">
+                <div style="width:${pct}%;height:100%;background:#1f5a2f"></div>
+              </div>
+            </td></tr>
+          </table>
+
+          <p style="margin:0 0 0;font-size:13px;line-height:1.55;color:#7a8a7a">
+            We&rsquo;ll email a one-click Every.org link the moment your tab crosses ${escapeHtml(charityName)}&rsquo;s ${usd(minDonationUsd)} minimum.
+            Prefer a charity with a lower minimum? Change it in your dashboard anytime — your tab carries over.
+          </p>
+        </td></tr>
+      </table>
+      <div style="max-width:560px;font-size:11px;color:#9aa89a;margin-top:16px;text-align:center">
+        Sent by EcoDues · offset your AI footprint
+      </div>
+    </td></tr>
+  </table>
+</body></html>`;
+
+  return { subject, html, text };
+}
+
+export function renderQuarterlyDigest(opts: {
+  displayName: string | null;
+  periodLabel: string;
+  tabUsd: number;
+  currentCharity: { name: string; minDonationUsd: number };
+  reachableCharities: Array<{ name: string; minDonationUsd: number }>;
+}): { subject: string; html: string; text: string } {
+  const { displayName, periodLabel, tabUsd, currentCharity, reachableCharities } = opts;
+  const usd = (n: number) => `$${n.toFixed(2)}`;
+  const name = displayName?.trim() || "there";
+  const subject = `Quarterly update — ${usd(tabUsd)} accrued, ${reachableCharities.length} charities in reach`;
+
+  const listText = reachableCharities.length
+    ? reachableCharities.map((c) => `  • ${c.name} (${usd(c.minDonationUsd)} min)`).join("\n")
+    : "  (none yet — keep building)";
+
+  const text = [
+    `Hi ${name},`,
+    ``,
+    `A quarter has passed and your offset tab sits at ${usd(tabUsd)}.`,
+    `That&rsquo;s still under ${currentCharity.name}&rsquo;s ${usd(currentCharity.minDonationUsd)} minimum,`,
+    `but these charities accept donations at your level right now:`,
+    ``,
+    listText,
+    ``,
+    `Switch your selected charity in your dashboard — your tab carries over.`,
+    ``,
+    `— EcoDues`,
+  ].join("\n");
+
+  const listHtml = reachableCharities.length
+    ? reachableCharities
+        .map(
+          (c) => `
+              <tr><td style="padding:10px 0;border-top:1px solid #e5e7e5">
+                <div style="font-size:14px;font-weight:500;color:#1a1a1a">${escapeHtml(c.name)}</div>
+                <div style="font-size:12px;color:#7a8a7a;margin-top:2px">${usd(c.minDonationUsd)} minimum</div>
+              </td></tr>`,
+        )
+        .join("")
+    : `<tr><td style="padding:10px 0;font-size:13px;color:#7a8a7a">No charities reachable yet — keep building.</td></tr>`;
+
+  const html = `<!doctype html>
+<html><body style="margin:0;padding:0;background:#f6f7f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#1a1a1a">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding:32px 16px">
+    <tr><td align="center">
+      <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e5e7e5">
+        <tr><td style="padding:32px 32px 24px">
+          <div style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:#5a6b5a;margin-bottom:8px">EcoDues · quarterly update · ${escapeHtml(periodLabel)}</div>
+          <h1 style="margin:0 0 12px;font-size:22px;font-weight:600;letter-spacing:-0.01em">Charities you can reach right now</h1>
+          <p style="margin:0 0 20px;font-size:15px;line-height:1.55;color:#4a5a4a">
+            Hi ${escapeHtml(name)} — your offset tab is at <strong style="color:#1a1a1a">${usd(tabUsd)}</strong>.
+            That&rsquo;s still under ${escapeHtml(currentCharity.name)}&rsquo;s ${usd(currentCharity.minDonationUsd)} minimum,
+            but you have options:
+          </p>
+
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px">
+            ${listHtml}
+          </table>
+
+          <p style="margin:0 0 0;font-size:13px;line-height:1.55;color:#7a8a7a">
+            Switch your selected charity in your dashboard — your tab carries over.
+            Or stick with ${escapeHtml(currentCharity.name)} and keep building.
           </p>
         </td></tr>
       </table>

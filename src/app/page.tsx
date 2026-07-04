@@ -155,6 +155,7 @@ export default function Home() {
           <div className="flex items-center gap-6">
             <Link href="#about" className="hover:text-white/80 transition-colors">About</Link>
             <Link href="/methodology" className="hover:text-white/80 transition-colors">Methodology</Link>
+            <Link href="/how-donations-work" className="hover:text-white/80 transition-colors">Donations</Link>
             <a
               href="https://github.com/gitJamoo/ecodues"
               target="_blank"

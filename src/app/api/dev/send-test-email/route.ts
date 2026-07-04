@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { DEV_MODE } from "@/lib/dev-mode";
 import { renderDonationEmail, sendEmail } from "@/lib/email";
-import { directLink } from "@/lib/every-org";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -29,9 +28,10 @@ export async function POST(req: Request) {
     displayName: "Dev User",
     periodLabel,
     damageUsd: 0.42,
-    donationUsd: 0.84,
+    donationUsd: 1.24,
     charityName: "Clean Air Task Force",
-    checkoutLink: directLink("clean-air-task-force", 5),
+    checkoutLink: "https://www.paypal.com/us/fundraiser/charity/1301357",
+    provider: "ppgf",
   });
 
   const hasKey = !!process.env.RESEND_API_KEY;

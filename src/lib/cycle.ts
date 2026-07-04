@@ -6,7 +6,6 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { connectorFor } from "./providers";
 import { tierById } from "./emissions/tiers";
 import { decryptSecret } from "./crypto";
-import { createCheckout, directLink } from "./every-org";
 
 export interface UsageRecordLike {
   id: string;
@@ -52,10 +51,11 @@ export async function runMonthlyCycleForUser(
 ): Promise<CycleResult> {
   const periodDate = periodDateString(period);
 
-  const { data: profile } = await supabase.from("profiles").select("multiplier, charity_id").eq("id", userId).single();
-  const { data: charity } = profile?.charity_id
-    ? await supabase.from("charities").select("every_org_slug").eq("id", profile.charity_id).single()
-    : { data: null };
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("multiplier, charity_id, pending_donation_usd")
+    .eq("id", userId)
+    .single();
   const { data: connections } = await supabase.from("provider_connections").select("*").eq("user_id", userId);
 
   // Refresh API + tier usage (manual rows stay)
@@ -107,26 +107,36 @@ export async function runMonthlyCycleForUser(
     })));
   }
 
-  // Build Every.org checkout — real API call when EVERY_ORG_PARTNER_KEY is set,
-  // otherwise falls back to a pre-filled direct link (no Partner key needed).
-  const slug = (charity as { every_org_slug?: string } | null)?.every_org_slug ?? null;
-  const partnerDonationId = `${userId}:${periodDate}`;
-  const checkout = slug && result.donationUsd > 0
-    ? await createCheckout({ nonprofitSlug: slug, amountUsd: result.donationUsd, partnerDonationId })
-    : null;
-  const checkoutLink = checkout?.checkoutLink
-    ?? (slug && result.donationUsd > 0 ? directLink(slug, result.donationUsd) : null);
+  // Ticker model: accrue this cycle's donation into the account tab. The
+  // checkout link is NOT built here anymore — the cron decides when to email
+  // one based on whether the tab has crossed the charity's minimum.
+  const isReRun = result.estimates.length > 0 || result.donationUsd > 0;
+  if (isReRun) {
+    // If this period already had a ledger row (re-run of the same cycle),
+    // subtract the old amount before adding the new one so the tab stays true.
+    const { data: prior } = await supabase
+      .from("donation_ledger")
+      .select("donation_usd")
+      .eq("user_id", userId)
+      .eq("period", periodDate)
+      .maybeSingle();
+    const prevAmount = Number(prior?.donation_usd ?? 0);
+    const delta = result.donationUsd - prevAmount;
 
-  await supabase.from("donation_ledger").upsert({
-    user_id: userId, period: periodDate,
-    damage_usd: result.totalDamageUsd,
-    multiplier: Number(profile?.multiplier ?? 2),
-    donation_usd: result.donationUsd,
-    charity_id: profile?.charity_id ?? null,
-    checkout_link: checkoutLink,
-    checkout_token: checkout?.checkoutToken ?? null,
-    status: checkoutLink ? "pending" : "simulated",
-  }, { onConflict: "user_id,period" });
+    await supabase.from("donation_ledger").upsert({
+      user_id: userId, period: periodDate,
+      damage_usd: result.totalDamageUsd,
+      multiplier: Number(profile?.multiplier ?? 2),
+      donation_usd: result.donationUsd,
+      charity_id: profile?.charity_id ?? null,
+      status: "accrued",
+    }, { onConflict: "user_id,period" });
+
+    if (delta !== 0) {
+      const nextTab = Math.max(0, Number(profile?.pending_donation_usd ?? 0) + delta);
+      await supabase.from("profiles").update({ pending_donation_usd: nextTab }).eq("id", userId);
+    }
+  }
 
   return result;
 }

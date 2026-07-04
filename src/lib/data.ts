@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { DEV_MODE, DEV_USER, DEV_PROFILE, DEV_CHARITIES, DEV_ESTIMATES, DEV_LEDGER, DEV_USAGE, DEV_LEADERBOARD, DEV_CHARITY_TOTALS } from "@/lib/dev-mode";
+import { DEV_MODE, DEV_USER, DEV_PROFILE, DEV_CHARITIES, DEV_ESTIMATES, DEV_LEDGER, DEV_PAYMENTS, DEV_USAGE, DEV_LEADERBOARD, DEV_CHARITY_TOTALS } from "@/lib/dev-mode";
 
 export async function getSessionUser() {
   if (DEV_MODE) return { supabase: null as never, user: DEV_USER as never };
@@ -17,16 +17,18 @@ export async function getDashboardData() {
       profile: DEV_PROFILE,
       estimates: DEV_ESTIMATES,
       ledger: DEV_LEDGER,
+      payments: DEV_PAYMENTS,
       usage: DEV_USAGE,
       charities: DEV_CHARITIES,
     };
   }
   const { supabase, user } = await getSessionUser();
-  const [{ data: profile }, { data: estimates }, { data: ledger }, { data: usage }, { data: charities }] =
+  const [{ data: profile }, { data: estimates }, { data: ledger }, { data: payments }, { data: usage }, { data: charities }] =
     await Promise.all([
       supabase.from("profiles").select("*").eq("id", user.id).single(),
       supabase.from("emission_estimates").select("*").eq("user_id", user.id).order("period", { ascending: true }),
       supabase.from("donation_ledger").select("*, charities(name)").eq("user_id", user.id).order("period", { ascending: false }),
+      supabase.from("donation_payments").select("*").eq("user_id", user.id).order("paid_at", { ascending: false }),
       supabase.from("usage_records").select("*").eq("user_id", user.id).order("period", { ascending: false }),
       supabase.from("charities").select("*"),
     ]);
@@ -35,6 +37,7 @@ export async function getDashboardData() {
     profile,
     estimates: estimates ?? [],
     ledger: ledger ?? [],
+    payments: payments ?? [],
     usage: usage ?? [],
     charities: charities ?? [],
   };

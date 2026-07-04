@@ -44,8 +44,35 @@ Handwritten notes. Not prioritized. Just things worth building someday.
 
 ---
 
+## Ticker / threshold model follow-ups
+
+- Contact any charity with `min_donation_usd > $5` (currently RMI @ $10) to see if they'll accept $1 platform-min via Every.org — user unlocks that tier as soon as they switch.
+- Email `partners@pledge.to` for: sandbox + prod partner keys, hosted-checkout URL endpoint (if any), webhook schema for `donation.completed`, whether Free-the-Fee can be forced on server-to-server charges.
+- Evaluate Pledge Free-the-Fee widget-embed feasibility (donor tips absorb fees) — spec says only works ≤$1000 with donor tipping enabled. If that constraint fits our sub-$5 accrual model, the widget path may beat Every.org on fee efficiency.
+- Once Pledge partner keys land, ship the `donation_provider` toggle in onboarding + settings and expose per-charity provider availability.
+
 ## Other
 
 - Mobile app or browser extension for passive tracking
 - Nonprofit 501(c)(3) filing once validated (Form 1023-EZ, ~$275, 2-6 months)
 - Open-source the emissions engine as a standalone npm package
+
+BEFORE LAUNCH -- CRITICAL::::
+
+- Clean up my twitter (what can people see?)
+- Create new twitter
+- Add a "Challenge" letter - challenge AI companies to embrace this and automatically do a match - also mention sponsors are always welcome
+- Add face to site (credibility)
+- Fix scrolling + mobile issues!!!!!!!
+- Test OFC
+- MAKE SIZZLE REEL
+
+LIST OF PEOPLE TO REACH OUT TO 4 BOOST
+
+- John Sweet
+- Peter
+- Eddy El Chaar
+- Dan Lamet
+- That one Mozilla guy (Check Email - had an interview)
+- Eric something from ELC
+- Maybe Patrick Lumber people

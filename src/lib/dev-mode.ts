@@ -17,6 +17,9 @@ export const DEV_PROFILE = {
   charity_id: "charity-1",
   multiplier: 2,
   onboarded_at: "2026-01-01T00:00:00.000Z",
+  pending_donation_usd: 1.24,
+  last_reminder_period: "2026-06-01",
+  donation_provider: "every_org" as const,
 };
 
 export const DEV_ESTIMATES = [
@@ -25,10 +28,17 @@ export const DEV_ESTIMATES = [
   { id: "est-3", user_id: DEV_USER.id, period: "2026-07", kwh: 1.85, kg_co2e: 0.703, damage_usd: 0.134, provider: "openrouter", model_class: "medium",  created_at: "2026-07-01T00:00:00.000Z" },
 ];
 
+// Ticker-model rows: donation_usd is what was ACCRUED into the tab that month.
+// Status "accrued" = still owed; "paid" = fully offset by a donation_payments row.
 export const DEV_LEDGER = [
-  { id: "led-1", user_id: DEV_USER.id, period: "2026-07", damage_usd: 0.134, multiplier: 2, donation_usd: 1.00,  charity_id: "charity-1", status: "pending",   checkout_link: "https://www.every.org/clean-air-task-force?amount=1&frequency=ONCE#donate", created_at: "2026-07-01T00:00:00.000Z", charities: { name: "Clean Air Task Force" } },
-  { id: "led-2", user_id: DEV_USER.id, period: "2026-06", damage_usd: 0.224, multiplier: 2, donation_usd: 0.448, charity_id: "charity-1", status: "simulated", checkout_link: null,                                                                                                                    created_at: "2026-06-30T00:00:00.000Z", charities: { name: "Clean Air Task Force" } },
-  { id: "led-3", user_id: DEV_USER.id, period: "2026-05", damage_usd: 0.173, multiplier: 2, donation_usd: 0.346, charity_id: "charity-1", status: "completed", checkout_link: null,                                                                                                                    created_at: "2026-05-31T00:00:00.000Z", charities: { name: "Clean Air Task Force" } },
+  { id: "led-1", user_id: DEV_USER.id, period: "2026-07", damage_usd: 0.134, multiplier: 2, donation_usd: 0.268, charity_id: "charity-1", status: "accrued", created_at: "2026-07-01T00:00:00.000Z", charities: { name: "Clean Air Task Force" } },
+  { id: "led-2", user_id: DEV_USER.id, period: "2026-06", damage_usd: 0.224, multiplier: 2, donation_usd: 0.448, charity_id: "charity-1", status: "accrued", created_at: "2026-06-30T00:00:00.000Z", charities: { name: "Clean Air Task Force" } },
+  { id: "led-3", user_id: DEV_USER.id, period: "2026-05", damage_usd: 0.173, multiplier: 2, donation_usd: 0.346, charity_id: "charity-1", status: "accrued", created_at: "2026-05-31T00:00:00.000Z", charities: { name: "Clean Air Task Force" } },
+  { id: "led-4", user_id: DEV_USER.id, period: "2026-04", damage_usd: 0.091, multiplier: 2, donation_usd: 0.182, charity_id: "charity-1", status: "paid",    created_at: "2026-04-30T00:00:00.000Z", charities: { name: "Clean Air Task Force" } },
+];
+
+export const DEV_PAYMENTS = [
+  { id: "pay-1", user_id: DEV_USER.id, charity_id: "charity-1", amount_usd: 0.18, paid_at: "2026-05-02T14:00:00.000Z", method: "manual", external_id: null,  checkout_link: null, notes: "Paid via Every.org receipt #4021" },
 ];
 
 export const DEV_USAGE = [
@@ -66,15 +76,21 @@ export const DEV_CHARITY_TOTALS = [
 // Platform default minimum donation is $1; a charity can raise it via min_value.
 // If you add a charity, ping the API endpoint above first — a 404 slug is why
 // checkout previously landed on Every.org's generic $10 fallback page.
+// min_donation_usd = charity minimum on the selected provider (Every.org platform default is $1).
+// paypalGivingFundUrl = PPGF page when the charity is enrolled; 100% delivered
+// (PayPal absorbs card fees, PPGF takes no cut). PPGF does NOT support amount
+// pre-fill — users must type the amount on landing.
+// TODO(charity outreach): confirm each charity's real min_value with partners@every.org.
+// TODO(charity outreach): ask non-enrolled charities to sign up for PPGF at paypal.com/us/enroll-charity.
 export const DEV_CHARITIES = [
-  { id: "charity-1",  name: "Clean Air Task Force",              description: "Founders Pledge top pick: neglected climate tech + policy (nuclear, geothermal, methane).",  category: "climate", url: "https://www.catf.us",              everyOrgSlug: "clean-air-task-force" },
-  { id: "charity-2",  name: "Carbon180",                         description: "Giving Green recommended: U.S. policy advocacy for scalable carbon removal.",                category: "removal", url: "https://carbon180.org",            everyOrgSlug: "carbon180" },
-  { id: "charity-3",  name: "Rewiring America",                  description: "Electrifying homes and buildings to slash U.S. household emissions.",                        category: "energy",  url: "https://www.rewiringamerica.org",  everyOrgSlug: "rewiring-america-inc" },
-  { id: "charity-4",  name: "Cool Earth",                        description: "Community-led rainforest protection with indigenous partners.",                              category: "nature",  url: "https://www.coolearth.org",        everyOrgSlug: "coolearth" },
-  { id: "charity-5",  name: "Rainforest Trust",                  description: "Purchases and permanently protects tropical forest habitat.",                                 category: "nature",  url: "https://www.rainforesttrust.org",  everyOrgSlug: "rainforest-trust" },
-  { id: "charity-6",  name: "Giving Green",                      description: "Evidence-based research identifying the highest-impact climate giving opportunities.",       category: "climate", url: "https://www.givinggreen.earth",    everyOrgSlug: "giving-green" },
-  { id: "charity-7",  name: "Project Drawdown",                  description: "Research and analysis mapping the most effective climate solutions worldwide.",              category: "climate", url: "https://drawdown.org",             everyOrgSlug: "drawdown" },
-  { id: "charity-8",  name: "RMI",                               description: "Market-based decarbonization across power, industry, buildings, and transport.",             category: "energy",  url: "https://rmi.org",                  everyOrgSlug: "rmi" },
-  { id: "charity-9",  name: "TerraPraxis",                       description: "Repowering coal plants with advanced nuclear; hard-to-abate industrial decarbonization.",    category: "energy",  url: "https://www.terrapraxis.org",      everyOrgSlug: "terrapraxis" },
-  { id: "charity-10", name: "Environmental Investigation Agency", description: "Undercover investigations driving HFC and methane policy wins worldwide.",                  category: "climate", url: "https://eia-global.org",           everyOrgSlug: "eia-global" },
+  { id: "charity-1",  name: "Clean Air Task Force",              description: "Founders Pledge top pick: neglected climate tech + policy (nuclear, geothermal, methane).",  category: "climate", url: "https://www.catf.us",              everyOrgSlug: "clean-air-task-force",  min_donation_usd: 1,  paypalGivingFundUrl: "https://www.paypal.com/us/fundraiser/charity/1301357" },
+  { id: "charity-5",  name: "Rainforest Trust",                  description: "Purchases and permanently protects tropical forest habitat.",                                 category: "nature",  url: "https://www.rainforesttrust.org",  everyOrgSlug: "rainforest-trust",      min_donation_usd: 1,  paypalGivingFundUrl: "https://www.paypal.com/us/fundraiser/charity/25602" },
+  { id: "charity-8",  name: "RMI",                               description: "Market-based decarbonization across power, industry, buildings, and transport.",             category: "energy",  url: "https://rmi.org",                  everyOrgSlug: "rmi",                   min_donation_usd: 1,  paypalGivingFundUrl: "https://www.paypal.com/us/fundraiser/charity/47750" },
+  { id: "charity-2",  name: "Carbon180",                         description: "Giving Green recommended: U.S. policy advocacy for scalable carbon removal.",                category: "removal", url: "https://carbon180.org",            everyOrgSlug: "carbon180",             min_donation_usd: 10, paypalGivingFundUrl: null },
+  { id: "charity-3",  name: "Rewiring America",                  description: "Electrifying homes and buildings to slash U.S. household emissions.",                        category: "energy",  url: "https://www.rewiringamerica.org",  everyOrgSlug: "rewiring-america-inc",  min_donation_usd: 10, paypalGivingFundUrl: null },
+  { id: "charity-4",  name: "Cool Earth",                        description: "Community-led rainforest protection with indigenous partners.",                              category: "nature",  url: "https://www.coolearth.org",        everyOrgSlug: "coolearth",             min_donation_usd: 10, paypalGivingFundUrl: null },
+  { id: "charity-6",  name: "Giving Green",                      description: "Evidence-based research identifying the highest-impact climate giving opportunities.",       category: "climate", url: "https://www.givinggreen.earth",    everyOrgSlug: "giving-green",          min_donation_usd: 10, paypalGivingFundUrl: null },
+  { id: "charity-7",  name: "Project Drawdown",                  description: "Research and analysis mapping the most effective climate solutions worldwide.",              category: "climate", url: "https://drawdown.org",             everyOrgSlug: "drawdown",              min_donation_usd: 10, paypalGivingFundUrl: null },
+  { id: "charity-9",  name: "TerraPraxis",                       description: "Repowering coal plants with advanced nuclear; hard-to-abate industrial decarbonization.",    category: "energy",  url: "https://www.terrapraxis.org",      everyOrgSlug: "terrapraxis",           min_donation_usd: 10, paypalGivingFundUrl: null },
+  { id: "charity-10", name: "Environmental Investigation Agency", description: "Undercover investigations driving HFC and methane policy wins worldwide.",                  category: "climate", url: "https://eia-global.org",           everyOrgSlug: "eia-global",            min_donation_usd: 10, paypalGivingFundUrl: null },
 ];

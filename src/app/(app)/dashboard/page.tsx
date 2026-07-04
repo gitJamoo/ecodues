@@ -8,9 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import { co2, energy, usd, monthLabel, co2Equivalents, kwhEquivalents } from "@/lib/format";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Bell } from "lucide-react";
 import { classifyModel } from "@/lib/emissions/models";
 import { estimateFromTokens, estimateFromSpend, donationForDamage } from "@/lib/emissions/engine";
+import { TabBanner } from "@/components/tab-banner";
 
 type UsageRow    = { id: string; period: string; provider: string; model: string; input_tokens: number; output_tokens: number; spend_usd: number; source: string };
 type EstimateRow = { period: string; kwh: number; kg_co2e: number; damage_usd: number };
@@ -32,7 +32,9 @@ export default async function DashboardPage() {
   if (!profile?.onboarded_at) redirect("/onboarding");
 
   const multiplier   = Number(profile.multiplier ?? 2);
-  const charityName  = charities.find((c: { id: string }) => c.id === profile?.charity_id)?.name ?? "—";
+  const selectedCharity = charities.find((c: { id: string }) => c.id === profile?.charity_id) ?? null;
+  const charityName  = selectedCharity?.name ?? "—";
+  const tabUsd = Number((profile as { pending_donation_usd?: number }).pending_donation_usd ?? 0);
 
   // Current period = current month (usage that will be processed in the next cycle)
   const now  = new Date();
@@ -49,8 +51,6 @@ export default async function DashboardPage() {
   const histDamage = (estimates as EstimateRow[]).reduce((s, e) => s + Number(e.damage_usd), 0);
   const totalDonated = (ledger as LedgerRow[]).reduce((s, l) => s + Number(l.donation_usd), 0);
   const periods = [...new Set((estimates as EstimateRow[]).map(e => e.period))].sort();
-  const pendingPayments = (ledger as LedgerRow[]).filter(l => l.status === "pending" && l.checkout_link);
-  const pendingTotal = pendingPayments.reduce((s, l) => s + Number(l.donation_usd), 0);
 
   return (
     <div className="space-y-6">
@@ -67,47 +67,7 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {pendingPayments.length > 0 && (
-        <div className="rounded-xl border border-amber-300 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800/50 p-4 space-y-3">
-          <div className="flex items-start gap-3">
-            <Bell className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-amber-900 dark:text-amber-100">
-                {pendingPayments.length === 1
-                  ? `You have 1 donation waiting for payment — ${usd(pendingTotal)}`
-                  : `You have ${pendingPayments.length} donations waiting for payment — ${usd(pendingTotal)} total`}
-              </p>
-              <p className="text-xs text-amber-800/80 dark:text-amber-200/70 mt-0.5">
-                We emailed you a checkout link on the 1st. Pay now to complete your offset — Every.org handles the card and sends a tax receipt.
-              </p>
-            </div>
-          </div>
-          <div className="space-y-1.5 pl-8">
-            {pendingPayments.map(l => {
-              const charity = charities.find((c: { id: string }) => c.id === l.charity_id);
-              return (
-                <a
-                  key={l.id}
-                  href={l.checkout_link ?? "#"}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between gap-3 rounded-lg bg-card border border-amber-200 dark:border-amber-800/50 px-3 py-2 text-sm hover:bg-amber-100/50 dark:hover:bg-amber-950/50 transition-colors"
-                >
-                  <div className="min-w-0">
-                    <div className="font-medium truncate">{monthLabel(l.period)}</div>
-                    <div className="text-xs text-muted-foreground truncate">
-                      {usd(Number(l.donation_usd))} → {charity?.name ?? "your charity"}
-                    </div>
-                  </div>
-                  <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-700 dark:text-amber-300 shrink-0">
-                    Pay now <ExternalLink className="w-3 h-3" />
-                  </span>
-                </a>
-              );
-            })}
-          </div>
-        </div>
-      )}
+      <TabBanner tabUsd={tabUsd} charity={selectedCharity} />
 
       <Tabs defaultValue="cycle" className="space-y-6">
         <TabsList>
@@ -209,17 +169,12 @@ export default async function DashboardPage() {
                           <td className="px-4 py-3 text-right tabular-nums font-medium text-primary">{usd(Number(l.donation_usd))}</td>
                           <td className="px-4 py-3 text-muted-foreground text-xs">{charity?.name ?? l.charities?.name ?? "—"}</td>
                           <td className="px-4 py-3">
-                            {l.status === "completed" && <Badge className="text-[10px] bg-primary/10 text-primary border-primary/20">Donated ✓</Badge>}
-                            {l.status === "pending"   && <Badge variant="outline" className="text-[10px] text-amber-600 border-amber-300">Awaiting payment</Badge>}
-                            {l.status === "simulated" && <Badge variant="secondary" className="text-[10px]">Simulated</Badge>}
+                            {l.status === "paid"            && <Badge className="text-[10px] bg-primary/10 text-primary border-primary/20">Paid ✓</Badge>}
+                            {l.status === "partially_paid"  && <Badge variant="outline" className="text-[10px] text-primary border-primary/40">Partially paid</Badge>}
+                            {l.status === "accrued"         && <Badge variant="outline" className="text-[10px] text-amber-600 border-amber-300">On tab</Badge>}
+                            {l.status === "simulated"       && <Badge variant="secondary" className="text-[10px]">Simulated</Badge>}
                           </td>
-                          <td className="px-4 py-3">
-                            {l.checkout_link && l.status !== "completed" && (
-                              <a href={l.checkout_link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 rounded-md border border-border px-2.5 py-1 text-xs font-medium hover:bg-muted transition-colors">
-                                Pay now <ExternalLink className="w-3 h-3" />
-                              </a>
-                            )}
-                          </td>
+                          <td className="px-4 py-3" />
                         </tr>
                       );
                     })}

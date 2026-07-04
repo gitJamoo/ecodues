@@ -114,6 +114,54 @@ export async function updateUsageRecord(id: string, patch: {
   return { ok: true };
 }
 
+export async function logPayment(form: {
+  amountUsd: number;
+  charityId?: string | null;
+  method?: "manual" | "every_org" | "pledge";
+  externalId?: string | null;
+  notes?: string | null;
+}) {
+  const amount = Math.max(0.01, Math.round(Number(form.amountUsd) * 100) / 100);
+  if (!Number.isFinite(amount) || amount <= 0) {
+    return { error: "Enter an amount greater than zero." };
+  }
+  if (DEV_MODE) return { ok: true, amountUsd: amount };
+
+  const { supabase, user } = await requireUser();
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("pending_donation_usd, charity_id")
+    .eq("id", user.id)
+    .single();
+
+  const charityId = form.charityId ?? profile?.charity_id ?? null;
+
+  await supabase.from("donation_payments").insert({
+    user_id: user.id,
+    charity_id: charityId,
+    amount_usd: amount,
+    method: form.method ?? "manual",
+    external_id: form.externalId ?? null,
+    notes: form.notes ?? null,
+  });
+
+  const nextTab = Math.max(0, Number(profile?.pending_donation_usd ?? 0) - amount);
+  await supabase.from("profiles").update({ pending_donation_usd: nextTab }).eq("id", user.id);
+
+  if (nextTab === 0) {
+    await supabase
+      .from("donation_ledger")
+      .update({ status: "paid" })
+      .eq("user_id", user.id)
+      .in("status", ["accrued", "partially_paid"]);
+  }
+
+  revalidatePath("/dashboard");
+  revalidatePath("/donations");
+  return { ok: true, amountUsd: amount, tabUsd: nextTab };
+}
+
 export async function runCycleNow() {
   if (DEV_MODE) return { ok: true, donationUsd: 4.28, damageUsd: 2.14 };
   const { supabase, user } = await requireUser();
