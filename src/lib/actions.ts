@@ -100,6 +100,20 @@ export async function completeOnboarding() {
   return { ok: true, donationUsd: result.donationUsd };
 }
 
+export async function updateUsageRecord(id: string, patch: {
+  provider?: string;
+  model?: string;
+  input_tokens?: number;
+  output_tokens?: number;
+  spend_usd?: number;
+}) {
+  if (DEV_MODE) return { ok: true };
+  const { supabase, user } = await requireUser();
+  await supabase.from("usage_records").update(patch).eq("id", id).eq("user_id", user.id);
+  revalidatePath("/dashboard");
+  return { ok: true };
+}
+
 export async function runCycleNow() {
   if (DEV_MODE) return { ok: true, donationUsd: 4.28, damageUsd: 2.14 };
   const { supabase, user } = await requireUser();

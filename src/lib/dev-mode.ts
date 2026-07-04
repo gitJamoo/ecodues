@@ -19,6 +19,25 @@ export const DEV_PROFILE = {
   onboarded_at: "2026-01-01T00:00:00.000Z",
 };
 
+export const DEV_ESTIMATES = [
+  { id: "est-1", user_id: DEV_USER.id, period: "2026-05", kwh: 2.4,  kg_co2e: 0.912, damage_usd: 0.173, provider: "openai",    model_class: "frontier", created_at: "2026-05-31T00:00:00.000Z" },
+  { id: "est-2", user_id: DEV_USER.id, period: "2026-06", kwh: 3.1,  kg_co2e: 1.178, damage_usd: 0.224, provider: "anthropic", model_class: "large",    created_at: "2026-06-30T00:00:00.000Z" },
+  { id: "est-3", user_id: DEV_USER.id, period: "2026-07", kwh: 1.85, kg_co2e: 0.703, damage_usd: 0.134, provider: "openrouter", model_class: "medium",  created_at: "2026-07-01T00:00:00.000Z" },
+];
+
+export const DEV_LEDGER = [
+  { id: "led-1", user_id: DEV_USER.id, period: "2026-07", damage_usd: 0.134, multiplier: 2, donation_usd: 0.268, charity_id: "charity-1", status: "simulated", created_at: "2026-07-01T00:00:00.000Z", charities: { name: "Clean Air Task Force" } },
+  { id: "led-2", user_id: DEV_USER.id, period: "2026-06", damage_usd: 0.224, multiplier: 2, donation_usd: 0.448, charity_id: "charity-1", status: "simulated", created_at: "2026-06-30T00:00:00.000Z", charities: { name: "Clean Air Task Force" } },
+  { id: "led-3", user_id: DEV_USER.id, period: "2026-05", damage_usd: 0.173, multiplier: 2, donation_usd: 0.346, charity_id: "charity-1", status: "simulated", created_at: "2026-05-31T00:00:00.000Z", charities: { name: "Clean Air Task Force" } },
+];
+
+export const DEV_USAGE = [
+  { id: "use-1", user_id: DEV_USER.id, period: "2026-07", provider: "openrouter", model: "meta-llama/llama-3.3-70b-instruct", input_tokens: 800000,  output_tokens: 200000, spend_usd: 1.00, source: "api_key", created_at: "2026-07-01T00:00:00.000Z" },
+  { id: "use-2", user_id: DEV_USER.id, period: "2026-06", provider: "anthropic",  model: "claude-3-5-sonnet-20241022",        input_tokens: 300000,  output_tokens:  80000, spend_usd: 4.30, source: "api_key", created_at: "2026-06-30T00:00:00.000Z" },
+  { id: "use-3", user_id: DEV_USER.id, period: "2026-06", provider: "openai",     model: "gpt-4o",                            input_tokens: 500000,  output_tokens: 125000, spend_usd: 6.25, source: "api_key", created_at: "2026-06-29T00:00:00.000Z" },
+  { id: "use-4", user_id: DEV_USER.id, period: "2026-05", provider: "openai",     model: "gpt-4o-mini",                       input_tokens: 2000000, output_tokens: 400000, spend_usd: 2.00, source: "api_key", created_at: "2026-05-31T00:00:00.000Z" },
+];
+
 export const DEV_CHARITIES = [
   { id: "charity-1", name: "Clean Air Task Force",          description: "Accelerating zero-carbon energy through policy and innovation.", category: "climate", url: "https://www.catf.us",                                             everyOrgSlug: "clean-air-task-force" },
   { id: "charity-2", name: "Carbon180",                     description: "Scaling carbon removal solutions.",                              category: "climate", url: "https://carbon180.org",                                           everyOrgSlug: "carbon-180" },

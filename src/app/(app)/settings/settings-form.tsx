@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useTheme } from "next-themes";
+import { SunIcon, MoonIcon, MonitorIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -28,6 +30,7 @@ export function SettingsForm({ profile, charities, totalDamageUsd }: {
   const [multiplier, setMultiplier] = useState(Number(profile?.multiplier ?? 2));
   const [charityId, setCharityId] = useState<string | null>(profile?.charity_id ?? null);
   const [saving, setSaving] = useState(false);
+  const { theme, setTheme } = useTheme();
 
   async function handleSave() {
     setSaving(true);
@@ -36,8 +39,14 @@ export function SettingsForm({ profile, charities, totalDamageUsd }: {
     toast.success("Settings saved");
   }
 
+  const themes = [
+    { value: "light",  label: "Light",  Icon: SunIcon },
+    { value: "dark",   label: "Dark",   Icon: MoonIcon },
+    { value: "system", label: "System", Icon: MonitorIcon },
+  ];
+
   return (
-    <div className="space-y-6 bg-white rounded-xl border border-border p-6">
+    <div className="space-y-6 bg-card rounded-xl border border-border p-6">
       <div className="space-y-2">
         <Label>Display name</Label>
         <Input value={name} onChange={e => setName(e.target.value)} placeholder="Your name" />
@@ -67,6 +76,27 @@ export function SettingsForm({ profile, charities, totalDamageUsd }: {
           <p className="text-sm text-muted-foreground mb-3">No card on file</p>
         )}
         <CardFormStub />
+      </div>
+
+      <Separator />
+
+      <div>
+        <Label className="mb-3 block">Appearance</Label>
+        <div className="flex gap-2">
+          {themes.map(({ value, label, Icon }) => (
+            <button
+              key={value}
+              onClick={() => setTheme(value)}
+              className={`flex flex-1 items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-sm font-medium transition-colors
+                ${theme === value
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "border-border text-muted-foreground hover:text-foreground hover:bg-muted"}`}
+            >
+              <Icon className="w-4 h-4" />
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <Separator />

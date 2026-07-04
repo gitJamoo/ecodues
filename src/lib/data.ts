@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { DEV_MODE, DEV_USER, DEV_PROFILE, DEV_CHARITIES } from "@/lib/dev-mode";
+import { DEV_MODE, DEV_USER, DEV_PROFILE, DEV_CHARITIES, DEV_ESTIMATES, DEV_LEDGER, DEV_USAGE } from "@/lib/dev-mode";
 
 export async function getSessionUser() {
   if (DEV_MODE) return { supabase: null as never, user: DEV_USER as never };
@@ -15,9 +15,9 @@ export async function getDashboardData() {
     return {
       user: DEV_USER,
       profile: DEV_PROFILE,
-      estimates: [],
-      ledger: [],
-      usage: [],
+      estimates: DEV_ESTIMATES,
+      ledger: DEV_LEDGER,
+      usage: DEV_USAGE,
       charities: DEV_CHARITIES,
     };
   }
