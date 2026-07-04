@@ -19,38 +19,61 @@ import { ProviderLogo } from "@/components/provider-logo";
 import { toast } from "sonner";
 import { CheckCircle2, AlertCircle, X, ExternalLink, ClipboardPaste, Info, CalendarDays } from "lucide-react";
 
-const PROVIDERS = [
+interface ProviderMeta {
+  id: "openrouter" | "openai" | "anthropic" | "gemini";
+  label: string;
+  color: string;
+  dashboardUrl: string;
+  dashboardLabel: string;
+  usageHint: string;
+  apiKeySupported: boolean;
+  apiKeyHint: string;
+  apiKeyLink?: { url: string; label: string };
+}
+
+const PROVIDERS: ProviderMeta[] = [
   {
-    id: "openrouter" as const,
+    id: "openrouter",
     label: "OpenRouter",
     color: "bg-violet-50 border-violet-200",
     dashboardUrl: "https://openrouter.ai/credits",
     dashboardLabel: "openrouter.ai/credits",
     usageHint: "Click your avatar → Activity. You'll see credits used per day and model.",
+    apiKeySupported: true,
+    apiKeyHint: "OpenRouter API key — we'll pull your usage automatically each month.",
+    apiKeyLink: { url: "https://openrouter.ai/keys", label: "openrouter.ai/keys" },
   },
   {
-    id: "openai" as const,
+    id: "openai",
     label: "OpenAI",
     color: "bg-green-50 border-green-200",
     dashboardUrl: "https://platform.openai.com/usage",
     dashboardLabel: "platform.openai.com/usage",
     usageHint: "Shows your monthly spend broken down by model. Copy the total or paste the whole page.",
+    apiKeySupported: true,
+    apiKeyHint: "Requires an Admin API key (sk-admin-…), NOT a regular API key. We use it to pull org-wide usage.",
+    apiKeyLink: { url: "https://platform.openai.com/settings/organization/admin-keys", label: "Create admin key" },
   },
   {
-    id: "anthropic" as const,
+    id: "anthropic",
     label: "Anthropic",
     color: "bg-orange-50 border-orange-200",
     dashboardUrl: "https://console.anthropic.com/settings/billing",
     dashboardLabel: "console.anthropic.com/settings/billing",
     usageHint: "Go to Billing → Usage. Shows token counts and cost by model per month.",
+    apiKeySupported: true,
+    apiKeyHint: "Requires an Admin API key (sk-ant-admin01-…). Regular API keys don't have usage-report access.",
+    apiKeyLink: { url: "https://console.anthropic.com/settings/admin-keys", label: "Create admin key" },
   },
   {
-    id: "gemini" as const,
+    id: "gemini",
     label: "Google Gemini",
     color: "bg-blue-50 border-blue-200",
     dashboardUrl: "https://aistudio.google.com/billing",
     dashboardLabel: "aistudio.google.com/billing",
     usageHint: "Open AI Studio → Settings → Billing, or check Google Cloud console for API usage costs.",
+    apiKeySupported: false,
+    apiKeyHint: "Google doesn't expose a per-project usage API — please log Gemini usage via Easy entry or Paste & parse instead.",
   },
 ];
 
@@ -154,7 +177,7 @@ export function ProviderConnect({ connections }: { connections: Connection[] }) 
         </div>
       </div>
 
-      {PROVIDERS.map(({ id: pid, label, color, dashboardUrl, dashboardLabel, usageHint }) => {
+      {PROVIDERS.map(({ id: pid, label, color, dashboardUrl, dashboardLabel, usageHint, apiKeySupported, apiKeyHint, apiKeyLink }) => {
         const conn = connFor(pid);
         const provTiers = TIER_ESTIMATES.filter(t => t.provider === pid);
         const p = parsed[pid];
@@ -185,7 +208,7 @@ export function ProviderConnect({ connections }: { connections: Connection[] }) 
                 <TabsTrigger value="easy" className="text-xs">Easy entry</TabsTrigger>
                 <TabsTrigger value="paste" className="text-xs">Paste & parse</TabsTrigger>
                 {provTiers.length > 0 && <TabsTrigger value="tier" className="text-xs">Subscription</TabsTrigger>}
-                <TabsTrigger value="api_key" className="text-xs">API key</TabsTrigger>
+                {apiKeySupported && <TabsTrigger value="api_key" className="text-xs">API key</TabsTrigger>}
               </TabsList>
 
               {/* ── Easy entry tab ── */}
@@ -354,25 +377,33 @@ export function ProviderConnect({ connections }: { connections: Connection[] }) 
               })()}
 
               {/* ── API key tab ── */}
-              <TabsContent value="api_key" className="space-y-2">
-                <p className="text-xs text-muted-foreground">
-                  {pid === "openrouter"
-                    ? "OpenRouter API key — we'll pull your usage automatically each month."
-                    : "Optional. We'll use demo/stub data in the PoC. Real connector coming soon."}
-                </p>
-                <div className="flex gap-2">
-                  <Input
-                    type="password"
-                    placeholder={`${label} API key`}
-                    value={keys[pid] ?? ""}
-                    onChange={e => setKeys(k => ({ ...k, [pid]: e.target.value }))}
-                    className="text-sm h-8"
-                  />
-                  <Button size="sm" className="h-8 shrink-0" onClick={() => handleApiKey(pid)} disabled={loading === pid + "_key"}>
-                    {loading === pid + "_key" ? "…" : "Connect"}
-                  </Button>
-                </div>
-              </TabsContent>
+              {apiKeySupported && (
+                <TabsContent value="api_key" className="space-y-2">
+                  <p className="text-xs text-muted-foreground">{apiKeyHint}</p>
+                  {apiKeyLink && (
+                    <a
+                      href={apiKeyLink.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-xs text-primary font-medium hover:underline"
+                    >
+                      {apiKeyLink.label} <ExternalLink className="w-3 h-3" />
+                    </a>
+                  )}
+                  <div className="flex gap-2">
+                    <Input
+                      type="password"
+                      placeholder={`${label} API key`}
+                      value={keys[pid] ?? ""}
+                      onChange={e => setKeys(k => ({ ...k, [pid]: e.target.value }))}
+                      className="text-sm h-8"
+                    />
+                    <Button size="sm" className="h-8 shrink-0" onClick={() => handleApiKey(pid)} disabled={loading === pid + "_key"}>
+                      {loading === pid + "_key" ? "…" : "Connect"}
+                    </Button>
+                  </div>
+                </TabsContent>
+              )}
             </Tabs>
           </div>
         );
