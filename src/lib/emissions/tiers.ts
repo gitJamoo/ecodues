@@ -21,4 +21,4 @@ export const TIER_ESTIMATES: TierEstimate[] = [
   { id: "gemini_advanced", provider: "gemini",    label: "Google AI Pro",   monthlyInputTokens: 1.4 * M, monthlyOutputTokens: 0.5 * M,  modelClass: "medium" },
 ];
 
-export const tierById = (id: string) => TIER_ESTIMATES.find(t => t.id === id);
+export const tierById = (id: string) => TIER_ESTIMATES.find(t => t.id === id.split(":")[0]);

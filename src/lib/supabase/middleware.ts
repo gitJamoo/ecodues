@@ -2,8 +2,10 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 const PROTECTED = ["/dashboard", "/providers", "/donations", "/settings", "/onboarding"];
+const DEV_MODE = process.env.DEV_MODE === "true";
 
 export async function updateSession(request: NextRequest) {
+  if (DEV_MODE) return NextResponse.next({ request });
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(

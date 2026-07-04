@@ -1,6 +1,8 @@
 "use client";
 
-interface Charity { id: string; name: string; description: string; category: string }
+import { ExternalLink } from "lucide-react";
+
+interface Charity { id: string; name: string; description: string; category: string; url?: string }
 
 interface CharityPickerProps {
   charities: Charity[];
@@ -26,7 +28,18 @@ export function CharityPicker({ charities, value, onChange }: CharityPickerProps
             <p className="text-sm font-medium leading-snug">{c.name}</p>
             <span className="text-[10px] bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full shrink-0">{c.category}</span>
           </div>
-          <p className="text-xs text-muted-foreground leading-relaxed">{c.description}</p>
+          <p className="text-xs text-muted-foreground leading-relaxed mb-2">{c.description}</p>
+          {c.url && (
+            <a
+              href={c.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={e => e.stopPropagation()}
+              className="inline-flex items-center gap-1 text-[11px] text-primary hover:underline font-medium"
+            >
+              Learn more <ExternalLink className="w-2.5 h-2.5" />
+            </a>
+          )}
         </button>
       ))}
     </div>

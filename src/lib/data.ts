@@ -1,7 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { DEV_MODE, DEV_USER, DEV_PROFILE, DEV_CHARITIES } from "@/lib/dev-mode";
 
 export async function getSessionUser() {
+  if (DEV_MODE) return { supabase: null as never, user: DEV_USER as never };
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
@@ -9,6 +11,16 @@ export async function getSessionUser() {
 }
 
 export async function getDashboardData() {
+  if (DEV_MODE) {
+    return {
+      user: DEV_USER,
+      profile: DEV_PROFILE,
+      estimates: [],
+      ledger: [],
+      usage: [],
+      charities: DEV_CHARITIES,
+    };
+  }
   const { supabase, user } = await getSessionUser();
   const [{ data: profile }, { data: estimates }, { data: ledger }, { data: usage }, { data: charities }] =
     await Promise.all([
@@ -29,6 +41,7 @@ export async function getDashboardData() {
 }
 
 export async function getConnections() {
+  if (DEV_MODE) return [];
   const { supabase, user } = await getSessionUser();
   const { data } = await supabase.from("provider_connections").select("*").eq("user_id", user.id).order("created_at");
   return data ?? [];

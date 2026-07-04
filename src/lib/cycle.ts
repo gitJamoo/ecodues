@@ -76,11 +76,14 @@ export async function runMonthlyCycleForUser(
         await supabase.from("provider_connections").update({ status: "error" }).eq("id", conn.id);
       }
     } else if (conn.kind === "tier" && conn.tier_id) {
-      const t = tierById(conn.tier_id);
+      const [baseTierId, pctStr] = conn.tier_id.split(":");
+      const pct = pctStr ? Math.min(1, Math.max(0, Number(pctStr) / 100)) : 1;
+      const t = tierById(baseTierId);
       if (t) {
         await supabase.from("usage_records").insert({
           user_id: userId, provider: conn.provider, model: t.id, period: periodDate,
-          input_tokens: t.monthlyInputTokens, output_tokens: t.monthlyOutputTokens,
+          input_tokens: Math.round(t.monthlyInputTokens * pct),
+          output_tokens: Math.round(t.monthlyOutputTokens * pct),
           spend_usd: 0, source: "tier_estimate",
         });
       }

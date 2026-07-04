@@ -8,8 +8,10 @@ import { connectorFor } from "@/lib/providers";
 import type { ProviderId } from "@/lib/providers/types";
 import { clampMultiplier } from "@/lib/emissions/engine";
 import { runMonthlyCycleForUser, previousPeriod } from "@/lib/cycle";
+import { DEV_MODE, DEV_USER } from "@/lib/dev-mode";
 
 async function requireUser() {
+  if (DEV_MODE) return { supabase: null as never, user: DEV_USER as never };
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
@@ -17,6 +19,10 @@ async function requireUser() {
 }
 
 export async function connectApiKey(provider: ProviderId, apiKey: string) {
+  if (DEV_MODE) {
+    const connector = connectorFor(provider);
+    return { ok: true, isStub: connector.isStub };
+  }
   const { supabase, user } = await requireUser();
   const connector = connectorFor(provider);
   if (!(await connector.validateKey(apiKey))) {
@@ -31,6 +37,7 @@ export async function connectApiKey(provider: ProviderId, apiKey: string) {
 }
 
 export async function connectTier(provider: ProviderId, tierId: string) {
+  if (DEV_MODE) return { ok: true };
   const { supabase, user } = await requireUser();
   await supabase.from("provider_connections").upsert({
     user_id: user.id, provider, kind: "tier", tier_id: tierId, status: "active",
@@ -46,6 +53,7 @@ export async function addManualUsage(
   inputTokens: number,
   outputTokens: number,
 ) {
+  if (DEV_MODE) return { ok: true };
   const { supabase, user } = await requireUser();
   await supabase.from("usage_records").insert({
     user_id: user.id, provider, model: "manual", period,
@@ -58,6 +66,7 @@ export async function addManualUsage(
 }
 
 export async function removeConnection(id: string) {
+  if (DEV_MODE) return;
   const { supabase } = await requireUser();
   await supabase.from("provider_connections").delete().eq("id", id);
   revalidatePath("/providers");
@@ -69,6 +78,7 @@ export async function saveSettings(form: {
   charityId?: string;
   cardLast4?: string;
 }) {
+  if (DEV_MODE) return { ok: true };
   const { supabase, user } = await requireUser();
   const patch: Record<string, unknown> = {};
   if (form.displayName !== undefined) patch.display_name = form.displayName;
@@ -82,6 +92,7 @@ export async function saveSettings(form: {
 }
 
 export async function completeOnboarding() {
+  if (DEV_MODE) return { ok: true, donationUsd: 0 };
   const { supabase, user } = await requireUser();
   await supabase.from("profiles").update({ onboarded_at: new Date().toISOString() }).eq("id", user.id);
   const result = await runMonthlyCycleForUser(supabase, user.id, previousPeriod(new Date()));
@@ -90,6 +101,7 @@ export async function completeOnboarding() {
 }
 
 export async function runCycleNow() {
+  if (DEV_MODE) return { ok: true, donationUsd: 4.28, damageUsd: 2.14 };
   const { supabase, user } = await requireUser();
   const result = await runMonthlyCycleForUser(supabase, user.id, previousPeriod(new Date()));
   revalidatePath("/dashboard");

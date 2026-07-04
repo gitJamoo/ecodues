@@ -2,6 +2,8 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { LayoutDashboard, Plug, Heart, BookOpen, Settings, LogOut } from "lucide-react";
+import { DEV_MODE, DEV_USER } from "@/lib/dev-mode";
+import { DevBanner } from "@/components/dev-banner";
 
 const nav = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -12,16 +14,23 @@ const nav = [
 ];
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  let email: string;
+  if (DEV_MODE) {
+    email = DEV_USER.email;
+  } else {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) redirect("/login");
+    email = user.email ?? "";
+  }
 
   return (
-    <div className="flex min-h-screen bg-muted/30">
+    <div className={`flex min-h-screen bg-muted/30 ${DEV_MODE ? "pt-8" : ""}`}>
+      {DEV_MODE && <DevBanner />}
       {/* Sidebar */}
-      <aside className="w-56 fixed inset-y-0 left-0 bg-white border-r border-border flex flex-col z-10">
+      <aside className={`w-56 fixed ${DEV_MODE ? "top-8" : "top-0"} bottom-0 left-0 bg-white border-r border-border flex flex-col z-10`}>
         <div className="px-5 py-5 border-b border-border">
-          <Link href="/dashboard" className="font-semibold text-base tracking-tight">Countervail</Link>
+          <Link href="/dashboard" className="font-semibold text-base tracking-tight">EcoDues</Link>
         </div>
         <nav className="flex-1 px-3 py-4 space-y-0.5">
           {nav.map(({ href, label, icon: Icon }) => (
@@ -36,7 +45,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           ))}
         </nav>
         <div className="px-3 py-4 border-t border-border">
-          <p className="text-xs text-muted-foreground px-3 mb-2 truncate">{user.email}</p>
+          <p className="text-xs text-muted-foreground px-3 mb-2 truncate">{email}</p>
           <form action="/auth/signout" method="post">
             <button
               type="submit"

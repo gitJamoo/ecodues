@@ -6,7 +6,7 @@ export default function Home() {
     <div className="min-h-screen bg-white">
       {/* Nav */}
       <nav className="border-b border-border px-6 py-4 flex items-center justify-between max-w-6xl mx-auto">
-        <span className="font-semibold text-lg tracking-tight">Countervail</span>
+        <span className="font-semibold text-lg tracking-tight">EcoDues</span>
         <div className="flex items-center gap-6 text-sm text-muted-foreground">
           <Link href="/methodology" className="hover:text-foreground transition-colors">Methodology</Link>
           <Link href="/login">
@@ -49,7 +49,7 @@ export default function Home() {
       </section>
 
       <footer className="border-t border-border py-6 px-6 text-center text-xs text-muted-foreground">
-        Countervail PoC · <Link href="/methodology" className="underline underline-offset-2">Read the methodology</Link>
+        EcoDues PoC · <Link href="/methodology" className="underline underline-offset-2">Read the methodology</Link>
       </footer>
     </div>
   );

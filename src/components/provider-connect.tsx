@@ -9,10 +9,14 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { connectApiKey, connectTier, addManualUsage, removeConnection } from "@/lib/actions";
 import { TIER_ESTIMATES } from "@/lib/emissions/tiers";
+import { estimateFromTokens, donationForDamage } from "@/lib/emissions/engine";
 import { periodDateString, previousPeriod } from "@/lib/cycle";
 import { parseStatement } from "@/lib/parse-statement";
+import { usd, co2, tokens } from "@/lib/format";
+import { ReminderModal } from "@/components/reminder-modal";
+import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
-import { CheckCircle2, AlertCircle, X, ExternalLink, ClipboardPaste, Info } from "lucide-react";
+import { CheckCircle2, AlertCircle, X, ExternalLink, ClipboardPaste, Info, CalendarDays } from "lucide-react";
 
 const PROVIDERS = [
   {
@@ -55,14 +59,23 @@ export function ProviderConnect({ connections }: { connections: Connection[] }) 
   const [loading, setLoading] = useState<string | null>(null);
   const [keys, setKeys] = useState<Record<string, string>>({});
   const [tiers, setTiers] = useState<Record<string, string>>({});
+  const [tierPct, setTierPct] = useState<Record<string, number>>({});
   const [spend, setSpend] = useState<Record<string, string>>({});
   const [inputTok, setInputTok] = useState<Record<string, string>>({});
   const [outputTok, setOutputTok] = useState<Record<string, string>>({});
   const [pasteText, setPasteText] = useState<Record<string, string>>({});
   const [parsed, setParsed] = useState<Record<string, ReturnType<typeof parseStatement>>>({});
+  const [savedProviders, setSavedProviders] = useState<Set<string>>(
+    () => new Set(connections.map(c => c.provider))
+  );
+  const [reminderOpen, setReminderOpen] = useState(false);
 
   const connFor = (pid: string) => connections.find(c => c.provider === pid);
   const period = periodDateString(previousPeriod(new Date()));
+
+  function markSaved(pid: string) {
+    setSavedProviders(prev => new Set([...prev, pid]));
+  }
 
   async function handleApiKey(pid: string) {
     const key = keys[pid];
@@ -73,15 +86,19 @@ export function ProviderConnect({ connections }: { connections: Connection[] }) 
     if ("error" in res && res.error) { toast.error(res.error); return; }
     toast.success(res.isStub ? `${pid} connected (demo data in PoC)` : `${pid} connected`);
     setKeys(k => ({ ...k, [pid]: "" }));
+    markSaved(pid);
   }
 
   async function handleTier(pid: string) {
     const tierId = tiers[pid];
     if (!tierId) return;
+    const pct = tierPct[pid] ?? 100;
+    const encoded = pct < 100 ? `${tierId}:${pct}` : tierId;
     setLoading(pid + "_tier");
-    await connectTier(pid as never, tierId);
+    await connectTier(pid as never, encoded);
     setLoading(null);
-    toast.success("Subscription tier saved");
+    toast.success(`Subscription saved (${pct}% usage)`);
+    markSaved(pid);
   }
 
   async function handleManual(pid: string) {
@@ -96,6 +113,7 @@ export function ProviderConnect({ connections }: { connections: Connection[] }) 
     setSpend(k => ({ ...k, [pid]: "" }));
     setInputTok(k => ({ ...k, [pid]: "" }));
     setOutputTok(k => ({ ...k, [pid]: "" }));
+    markSaved(pid);
   }
 
   function handleParse(pid: string) {
@@ -116,6 +134,7 @@ export function ProviderConnect({ connections }: { connections: Connection[] }) 
     toast.success("Usage recorded from pasted statement");
     setPasteText(t => ({ ...t, [pid]: "" }));
     setParsed(q => ({ ...q, [pid]: null }));
+    markSaved(pid);
   }
 
   async function handleRemove(id: string) {
@@ -271,11 +290,17 @@ export function ProviderConnect({ connections }: { connections: Connection[] }) 
               </TabsContent>
 
               {/* ── Subscription tier tab ── */}
-              {provTiers.length > 0 && (
-                <TabsContent value="tier" className="space-y-2">
-                  <p className="text-xs text-muted-foreground">Using a consumer subscription (ChatGPT Plus, Claude Pro, etc.)? Pick your plan and we&apos;ll use published average-usage estimates.</p>
-                  <div className="flex gap-2">
-                    <Select onValueChange={(v: string | null) => { if (v) setTiers((t: Record<string, string>) => ({ ...t, [pid]: v })); }}>
+              {provTiers.length > 0 && (() => {
+                const selectedTier = TIER_ESTIMATES.find(t => t.id === tiers[pid]);
+                const pct = tierPct[pid] ?? 100;
+                const scaledIn  = selectedTier ? Math.round(selectedTier.monthlyInputTokens  * pct / 100) : 0;
+                const scaledOut = selectedTier ? Math.round(selectedTier.monthlyOutputTokens * pct / 100) : 0;
+                const estimate  = selectedTier ? estimateFromTokens(selectedTier.modelClass, scaledIn, scaledOut) : null;
+                return (
+                  <TabsContent value="tier" className="space-y-3">
+                    <p className="text-xs text-muted-foreground">Pick your consumer plan. Adjust the usage slider to match how heavily you use it.</p>
+
+                    <Select onValueChange={(v: string | null) => { if (v) setTiers(t => ({ ...t, [pid]: v })); }}>
                       <SelectTrigger className="bg-white text-sm h-8">
                         <SelectValue placeholder="Pick your plan" />
                       </SelectTrigger>
@@ -285,12 +310,46 @@ export function ProviderConnect({ connections }: { connections: Connection[] }) 
                         ))}
                       </SelectContent>
                     </Select>
-                    <Button size="sm" className="h-8 shrink-0" onClick={() => handleTier(pid)} disabled={loading === pid + "_tier"}>
-                      {loading === pid + "_tier" ? "…" : "Save"}
+
+                    {selectedTier && (
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-xs">
+                          <Label className="text-[11px] text-muted-foreground">How much do you use it?</Label>
+                          <span className="font-semibold tabular-nums text-foreground">{pct}%</span>
+                        </div>
+                        <Slider
+                          min={5} max={100} step={5}
+                          value={[pct]}
+                          onValueChange={(vals) => setTierPct(p => ({ ...p, [pid]: (vals as number[])[0] }))}
+                          className="w-full"
+                        />
+                        <div className="flex justify-between text-[10px] text-muted-foreground">
+                          <span>Light user</span>
+                          <span>Average</span>
+                          <span>Heavy user</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {estimate && (
+                      <div className="rounded-lg bg-white border border-border px-3 py-2.5 text-xs space-y-1">
+                        <p className="font-medium text-foreground">Estimated monthly impact</p>
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-muted-foreground">
+                          <span>Input tokens</span>  <span className="tabular-nums text-right">{tokens(scaledIn)}</span>
+                          <span>Output tokens</span> <span className="tabular-nums text-right">{tokens(scaledOut)}</span>
+                          <span>CO₂e</span>          <span className="tabular-nums text-right">{co2(estimate.kgCo2e)}</span>
+                          <span>Damage</span>         <span className="tabular-nums text-right font-medium text-foreground">{usd(estimate.damageUsd)}</span>
+                          <span>Donation (2×)</span>  <span className="tabular-nums text-right font-semibold text-primary">{usd(donationForDamage(estimate.damageUsd, 2))}</span>
+                        </div>
+                      </div>
+                    )}
+
+                    <Button size="sm" className="h-8" onClick={() => handleTier(pid)} disabled={loading === pid + "_tier" || !tiers[pid]}>
+                      {loading === pid + "_tier" ? "Saving…" : "Save plan"}
                     </Button>
-                  </div>
-                </TabsContent>
-              )}
+                  </TabsContent>
+                );
+              })()}
 
               {/* ── API key tab ── */}
               <TabsContent value="api_key" className="space-y-2">
@@ -316,6 +375,29 @@ export function ProviderConnect({ connections }: { connections: Connection[] }) 
           </div>
         );
       })}
+
+      {/* Reminder banner — appears after first provider saved */}
+      {savedProviders.size > 0 && (
+        <div className="flex items-center justify-between rounded-xl border border-primary/20 bg-primary/5 px-4 py-3">
+          <div className="flex items-center gap-2.5">
+            <CalendarDays className="w-4 h-4 text-primary shrink-0" />
+            <div className="text-sm">
+              <span className="font-medium text-primary">Set a monthly reminder</span>
+              <span className="text-muted-foreground"> — so you don&apos;t forget to log usage before the 1st.</span>
+            </div>
+          </div>
+          <Button size="sm" variant="outline" className="shrink-0 gap-1.5 ml-4" onClick={() => setReminderOpen(true)}>
+            <CalendarDays className="w-3.5 h-3.5" />
+            Set reminder
+          </Button>
+        </div>
+      )}
+
+      <ReminderModal
+        open={reminderOpen}
+        onClose={() => setReminderOpen(false)}
+        providers={PROVIDERS.filter(p => savedProviders.has(p.id))}
+      />
     </div>
   );
 }

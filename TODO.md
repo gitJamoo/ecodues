@@ -1,4 +1,4 @@
-# Future Ideas — Countervail
+# Future Ideas — EcoDues
 
 Handwritten notes. Not prioritized. Just things worth building someday.
 
@@ -18,7 +18,7 @@ Handwritten notes. Not prioritized. Just things worth building someday.
 ## Claude Code Auto-Embed
 
 - Dashboard widget that auto-detects Claude Code CLI usage from `~/.claude/` usage logs
-- Background agent or tray app that watches Claude Code session files and pushes token counts to Countervail automatically — zero manual entry for Claude Code users
+- Background agent or tray app that watches Claude Code session files and pushes token counts to EcoDues automatically — zero manual entry for Claude Code users
 - Could piggyback on Claude Code's existing session metadata (model used, token counts per session)
 - OAuth or API key flow so Claude Code users just click "Connect Claude Code" and it wires up
 - Potential: official Anthropic integration so token counts flow directly, no scraping

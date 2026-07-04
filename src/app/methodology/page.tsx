@@ -5,7 +5,7 @@ export default function MethodologyPage() {
   return (
     <div className="min-h-screen bg-white">
       <nav className="border-b border-border px-6 py-4 flex items-center justify-between max-w-4xl mx-auto">
-        <Link href="/" className="font-semibold text-base tracking-tight">Countervail</Link>
+        <Link href="/" className="font-semibold text-base tracking-tight">EcoDues</Link>
         <Link href="/login" className="text-sm text-muted-foreground hover:text-foreground">Sign in →</Link>
       </nav>
 

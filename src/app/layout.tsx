@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Countervail — Make your AI use net-positive",
+  title: "EcoDues — Make your AI use net-positive",
   description: "Connect your AI providers, see your inference footprint, and automatically donate to offset it — twice.",
 };
 

@@ -17,9 +17,13 @@ interface Profile {
   charity_id: string | null;
   card_last4: string | null;
 }
-interface Charity { id: string; name: string; description: string; category: string }
+interface Charity { id: string; name: string; description: string; category: string; url?: string }
 
-export function SettingsForm({ profile, charities }: { profile: Profile | null; charities: Charity[] }) {
+export function SettingsForm({ profile, charities, totalDamageUsd }: {
+  profile: Profile | null;
+  charities: Charity[];
+  totalDamageUsd?: number;
+}) {
   const [name, setName] = useState(profile?.display_name ?? "");
   const [multiplier, setMultiplier] = useState(Number(profile?.multiplier ?? 2));
   const [charityId, setCharityId] = useState<string | null>(profile?.charity_id ?? null);
@@ -43,7 +47,7 @@ export function SettingsForm({ profile, charities }: { profile: Profile | null; 
 
       <div>
         <Label className="mb-3 block">Donation multiplier</Label>
-        <MultiplierSlider value={multiplier} onChange={setMultiplier} />
+        <MultiplierSlider value={multiplier} onChange={setMultiplier} damageUsd={totalDamageUsd} />
       </div>
 
       <Separator />
