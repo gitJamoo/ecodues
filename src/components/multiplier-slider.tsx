@@ -7,7 +7,8 @@ interface MultiplierSliderProps {
   onChange: (v: number) => void;
 }
 
-export function MultiplierSlider({ value, onChange }: MultiplierSliderProps) {
+export function MultiplierSlider({ value: rawValue, onChange }: MultiplierSliderProps) {
+  const value = typeof rawValue === "number" && !isNaN(rawValue) ? rawValue : 2;
   return (
     <div className="space-y-3">
       <div className="flex items-end justify-between">
