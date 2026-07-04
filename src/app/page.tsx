@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/logo";
 import { ExternalLink } from "lucide-react";
+import { VideoBackdrop } from "@/components/video-backdrop";
 
 function GithubIcon({ className }: { className?: string }) {
   return (
@@ -13,29 +14,35 @@ function GithubIcon({ className }: { className?: string }) {
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen text-white">
       {/* Nav */}
-      <nav className="border-b border-border px-6 py-4 flex items-center justify-between max-w-6xl mx-auto">
+      <nav className="border-b border-white/10 px-6 py-4 flex items-center justify-between max-w-6xl mx-auto">
         <Logo size={26} />
-        <div className="flex items-center gap-6 text-sm text-muted-foreground">
-          <Link href="#about" className="hover:text-foreground transition-colors">About</Link>
-          <Link href="/methodology" className="hover:text-foreground transition-colors">Methodology</Link>
+        <div className="flex items-center gap-6 text-sm text-white/70">
+          <Link href="#about" className="hover:text-white transition-colors">About</Link>
+          <Link href="/methodology" className="hover:text-white transition-colors">Methodology</Link>
           <Link href="/login">
-            <Button variant="outline" size="sm">Sign in</Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-white/20 text-white hover:bg-white/10 bg-transparent"
+            >
+              Sign in
+            </Button>
           </Link>
         </div>
       </nav>
 
-      {/* Hero */}
+      {/* Hero — video frozen at first frame here */}
       <main className="max-w-3xl mx-auto px-6 pt-24 pb-20 text-center">
-        <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary mb-6">
+        <div className="inline-flex items-center gap-2 rounded-full bg-white/10 border border-white/20 px-3 py-1 text-xs font-medium text-white/80 mb-6">
           Open source · Powered by Every.org
         </div>
-        <h1 className="text-5xl font-semibold tracking-tight leading-tight mb-6">
+        <h1 className="text-5xl font-semibold tracking-tight leading-tight mb-6 text-white">
           Your AI has a footprint.<br />
           <span className="text-primary">Erase it — twice.</span>
         </h1>
-        <p className="text-lg text-muted-foreground mb-10 max-w-xl mx-auto leading-relaxed">
+        <p className="text-lg text-white/70 mb-10 max-w-xl mx-auto leading-relaxed">
           Connect your AI provider accounts. We measure your inference emissions using peer-reviewed research,
           then automatically donate 2× the equivalent damage to climate charities every month.
         </p>
@@ -44,28 +51,37 @@ export default function Home() {
         </Link>
       </main>
 
-      {/* Steps */}
+      {/*
+        VideoBackdrop renders two things:
+        1. A fixed full-screen video pinned behind all content (-z-10)
+        2. A scroll-zone spacer here — scrubs the video as user scrolls through it.
+        Before this zone: video frozen at frame 0.
+        After this zone: video frozen at last frame.
+      */}
+      <VideoBackdrop src="/hero_video.mp4" scrollHeight="300vh" />
+
+      {/* Steps — video frozen at last frame here */}
       <section className="max-w-4xl mx-auto px-6 pb-24 grid grid-cols-1 gap-6 sm:grid-cols-3">
         {[
           { n: "1", title: "Connect", body: "Add your OpenRouter, OpenAI, Anthropic, or Gemini account. Or just pick your subscription tier." },
           { n: "2", title: "We measure", body: "We compute your monthly CO₂e footprint using published energy-per-token estimates and cite every constant." },
           { n: "3", title: "We donate 2×", body: "On the 1st of each month, we donate twice your damage to a climate charity you choose. Via Every.org — we never hold your money." },
         ].map(({ n, title, body }) => (
-          <div key={n} className="rounded-xl border border-border p-6">
-            <div className="w-8 h-8 rounded-full bg-primary/10 text-primary text-sm font-semibold flex items-center justify-center mb-4">{n}</div>
-            <h3 className="font-semibold mb-2">{title}</h3>
-            <p className="text-sm text-muted-foreground leading-relaxed">{body}</p>
+          <div key={n} className="rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm p-6">
+            <div className="w-8 h-8 rounded-full bg-white/10 text-white text-sm font-semibold flex items-center justify-center mb-4">{n}</div>
+            <h3 className="font-semibold mb-2 text-white">{title}</h3>
+            <p className="text-sm text-white/60 leading-relaxed">{body}</p>
           </div>
         ))}
       </section>
 
       {/* Open source banner */}
-      <section className="border-y border-border bg-primary/5 py-12 px-6">
+      <section className="border-y border-white/10 bg-black/30 backdrop-blur-sm py-12 px-6">
         <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="text-center sm:text-left">
             <p className="text-xs font-medium text-primary uppercase tracking-widest mb-2">100% Open Source</p>
-            <h2 className="text-2xl font-semibold tracking-tight mb-2">Built in the open. Always.</h2>
-            <p className="text-sm text-muted-foreground max-w-md leading-relaxed">
+            <h2 className="text-2xl font-semibold tracking-tight mb-2 text-white">Built in the open. Always.</h2>
+            <p className="text-sm text-white/60 max-w-md leading-relaxed">
               Every line of code — the emissions engine, the donation logic, the methodology — is public.
               Audit it, fork it, improve it. Contributors are always welcome and genuinely appreciated.
             </p>
@@ -74,7 +90,7 @@ export default function Home() {
             href="https://github.com/gitJamoo/ecodues"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2.5 rounded-full bg-foreground text-background px-6 py-3 text-sm font-semibold hover:bg-foreground/80 transition-colors shrink-0"
+            className="inline-flex items-center gap-2.5 rounded-full bg-white text-black px-6 py-3 text-sm font-semibold hover:bg-white/90 transition-colors shrink-0"
           >
             <GithubIcon className="w-4 h-4" />
             View on GitHub
@@ -86,10 +102,10 @@ export default function Home() {
       <section id="about" className="max-w-3xl mx-auto px-6 py-24">
         <div className="text-center mb-12">
           <p className="text-xs font-medium text-primary uppercase tracking-widest mb-3">The story</p>
-          <h2 className="text-3xl font-semibold tracking-tight">Why EcoDues exists</h2>
+          <h2 className="text-3xl font-semibold tracking-tight text-white">Why EcoDues exists</h2>
         </div>
 
-        <div className="prose prose-sm max-w-none text-muted-foreground leading-relaxed space-y-5 text-[15px]">
+        <div className="max-w-none text-white/70 leading-relaxed space-y-5 text-[15px]">
           <p>
             I use AI tools every day — for learning, building, and generally trying to get better at what I do.
             But the more I learned about the environmental cost of large language models, the harder it became
@@ -97,7 +113,7 @@ export default function Home() {
           </p>
           <p>
             I didn&apos;t want to stop using AI. The upskilling is real, the productivity gains are real, and
-            the technology is genuinely exciting. What I wanted was a way to use it <em>responsibly</em> —
+            the technology is genuinely exciting. What I wanted was a way to use it <em className="text-white/90">responsibly</em> —
             to keep growing while giving something back to the planet in proportion to what I was taking.
           </p>
           <p>
@@ -112,12 +128,12 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="mt-12 flex items-center gap-4 border-t border-border pt-10">
-          <div className="w-12 h-12 rounded-full bg-primary/10 text-primary font-semibold text-lg flex items-center justify-center shrink-0">
+        <div className="mt-12 flex items-center gap-4 border-t border-white/10 pt-10">
+          <div className="w-12 h-12 rounded-full bg-white/10 text-white font-semibold text-lg flex items-center justify-center shrink-0">
             JS
           </div>
           <div>
-            <p className="font-semibold text-sm">James Smith</p>
+            <p className="font-semibold text-sm text-white">James Smith</p>
             <a
               href="https://j-m-s.dev/"
               target="_blank"
@@ -131,19 +147,24 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border py-8 px-6">
-        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
+      <footer className="border-t border-white/10 bg-black/40 backdrop-blur-sm py-8 px-6">
+        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/50">
           <div className="flex items-center gap-1.5">
             <Logo size={18} />
           </div>
           <div className="flex items-center gap-6">
-            <Link href="#about" className="hover:text-foreground transition-colors">About</Link>
-            <Link href="/methodology" className="hover:text-foreground transition-colors">Methodology</Link>
-            <a href="https://github.com/gitJamoo/ecodues" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors flex items-center gap-1">
+            <Link href="#about" className="hover:text-white/80 transition-colors">About</Link>
+            <Link href="/methodology" className="hover:text-white/80 transition-colors">Methodology</Link>
+            <a
+              href="https://github.com/gitJamoo/ecodues"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-white/80 transition-colors flex items-center gap-1"
+            >
               <GithubIcon className="w-3 h-3" /> GitHub
             </a>
           </div>
-          <p>Made with care by <a href="https://j-m-s.dev/" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-foreground">James Smith</a></p>
+          <p>Made with care by <a href="https://j-m-s.dev/" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-white/80">James Smith</a></p>
         </div>
       </footer>
     </div>
