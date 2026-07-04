@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/logo";
+import { HeroScene } from "@/components/hero-scene";
 import { ExternalLink } from "lucide-react";
 
 function GithubIcon({ className }: { className?: string }) {
@@ -26,23 +27,24 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* Hero */}
-      <main className="max-w-3xl mx-auto px-6 pt-24 pb-20 text-center">
+      {/* 3D scrolling hero */}
+      <HeroScene />
+
+      {/* CTA below the 3D scene */}
+      <div className="text-center py-20 px-6 bg-white">
         <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary mb-6">
           Open source · Powered by Every.org
         </div>
-        <h1 className="text-5xl font-semibold tracking-tight leading-tight mb-6">
-          Your AI has a footprint.<br />
-          <span className="text-primary">Erase it — twice.</span>
-        </h1>
-        <p className="text-lg text-muted-foreground mb-10 max-w-xl mx-auto leading-relaxed">
-          Connect your AI provider accounts. We measure your inference emissions using peer-reviewed research,
-          then automatically donate 2× the equivalent damage to climate charities every month.
+        <h2 className="text-4xl font-semibold tracking-tight leading-tight mb-5 max-w-xl mx-auto">
+          Ready to make your AI use net-positive?
+        </h2>
+        <p className="text-lg text-muted-foreground mb-10 max-w-lg mx-auto leading-relaxed">
+          Connect your accounts, pick a charity, and we handle the rest — automatically every month.
         </p>
         <Link href="/login">
           <Button size="lg" className="rounded-full px-8">Get started free</Button>
         </Link>
-      </main>
+      </div>
 
       {/* Steps */}
       <section className="max-w-4xl mx-auto px-6 pb-24 grid grid-cols-1 gap-6 sm:grid-cols-3">
