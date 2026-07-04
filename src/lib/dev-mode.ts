@@ -26,7 +26,7 @@ export const DEV_ESTIMATES = [
 ];
 
 export const DEV_LEDGER = [
-  { id: "led-1", user_id: DEV_USER.id, period: "2026-07", damage_usd: 0.134, multiplier: 2, donation_usd: 0.268, charity_id: "charity-1", status: "pending",   checkout_link: "https://www.every.org/clean-air-task-force?amount=1&frequency=ONCE#donate", created_at: "2026-07-01T00:00:00.000Z", charities: { name: "Clean Air Task Force" } },
+  { id: "led-1", user_id: DEV_USER.id, period: "2026-07", damage_usd: 0.134, multiplier: 2, donation_usd: 1.00,  charity_id: "charity-1", status: "pending",   checkout_link: "https://www.every.org/clean-air-task-force?amount=1&frequency=ONCE#donate", created_at: "2026-07-01T00:00:00.000Z", charities: { name: "Clean Air Task Force" } },
   { id: "led-2", user_id: DEV_USER.id, period: "2026-06", damage_usd: 0.224, multiplier: 2, donation_usd: 0.448, charity_id: "charity-1", status: "simulated", checkout_link: null,                                                                                                                    created_at: "2026-06-30T00:00:00.000Z", charities: { name: "Clean Air Task Force" } },
   { id: "led-3", user_id: DEV_USER.id, period: "2026-05", damage_usd: 0.173, multiplier: 2, donation_usd: 0.346, charity_id: "charity-1", status: "completed", checkout_link: null,                                                                                                                    created_at: "2026-05-31T00:00:00.000Z", charities: { name: "Clean Air Task Force" } },
 ];
@@ -58,11 +58,15 @@ export const DEV_CHARITY_TOTALS = [
   { charity_id: "charity-6", charity_name: "Founders Pledge Climate Fund",   total_donated:  5.20, donor_count: 1 },
 ];
 
+// Every.org slugs verified against https://partners.every.org/v0.2/nonprofit/{slug}
+// Platform default minimum donation is $1; a charity can raise it via min_value.
+// If you add a charity, ping the API endpoint above first — a 404 slug is why
+// checkout previously landed on Every.org's generic $10 fallback page.
 export const DEV_CHARITIES = [
-  { id: "charity-1", name: "Clean Air Task Force",          description: "Accelerating zero-carbon energy through policy and innovation.", category: "climate", url: "https://www.catf.us",                                             everyOrgSlug: "clean-air-task-force" },
-  { id: "charity-2", name: "Carbon180",                     description: "Scaling carbon removal solutions.",                              category: "climate", url: "https://carbon180.org",                                           everyOrgSlug: "carbon-180" },
-  { id: "charity-3", name: "Rewiring America",              description: "Electrifying everything to slash household emissions.",          category: "energy",  url: "https://www.rewiringamerica.org",                                 everyOrgSlug: "rewiring-america" },
-  { id: "charity-4", name: "Cool Earth",                    description: "Protecting rainforest with local communities.",                  category: "nature",  url: "https://www.coolearth.org",                                      everyOrgSlug: "cool-earth" },
-  { id: "charity-5", name: "Coalition for Rainforest Nations", description: "REDD+ financing to reduce deforestation.",                   category: "nature",  url: "https://www.rainforestcoalition.org",                            everyOrgSlug: "coalition-for-rainforest-nations" },
-  { id: "charity-6", name: "Founders Pledge Climate Fund",  description: "Top-recommended charities by expert researchers.",              category: "climate", url: "https://founderspledge.com/funds/climate-change-fund",           everyOrgSlug: "giving-green-fund" },
+  { id: "charity-1", name: "Clean Air Task Force",  description: "Founders Pledge top pick: neglected climate tech + policy (nuclear, geothermal, methane).", category: "climate", url: "https://www.catf.us",              everyOrgSlug: "clean-air-task-force" },
+  { id: "charity-2", name: "Carbon180",             description: "Giving Green recommended: U.S. policy advocacy for scalable carbon removal.",              category: "removal", url: "https://carbon180.org",            everyOrgSlug: "carbon180" },
+  { id: "charity-3", name: "Rewiring America",      description: "Electrifying homes and buildings to slash U.S. household emissions.",                      category: "energy",  url: "https://www.rewiringamerica.org",  everyOrgSlug: "rewiring-america-inc" },
+  { id: "charity-4", name: "Cool Earth",            description: "Community-led rainforest protection with indigenous partners.",                            category: "nature",  url: "https://www.coolearth.org",        everyOrgSlug: "coolearth" },
+  { id: "charity-5", name: "Rainforest Trust",      description: "Purchases and permanently protects tropical forest habitat.",                               category: "nature",  url: "https://www.rainforesttrust.org",  everyOrgSlug: "rainforest-trust" },
+  { id: "charity-6", name: "Giving Green",          description: "Evidence-based research identifying the highest-impact climate giving opportunities.",     category: "climate", url: "https://www.givinggreen.earth",    everyOrgSlug: "giving-green" },
 ];
