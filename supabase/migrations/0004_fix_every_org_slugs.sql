@@ -29,3 +29,11 @@ set    id             = 'rewiringamerica',
        every_org_slug = 'rewiring-america-inc',
        category       = 'energy'
 where  id = 'cleanenergybuyersinstitute';
+
+-- Additional verified $1-min climate charities on Every.org
+insert into charities (id, name, description, category, url, every_org_slug) values
+  ('drawdown',    'Project Drawdown',                   'Research and analysis mapping the most effective climate solutions worldwide.',           'climate', 'https://drawdown.org',             'drawdown'),
+  ('rmi',         'RMI',                                'Market-based decarbonization across power, industry, buildings, and transport.',          'energy',  'https://rmi.org',                  'rmi'),
+  ('terrapraxis', 'TerraPraxis',                        'Repowering coal plants with advanced nuclear; hard-to-abate industrial decarbonization.', 'energy',  'https://www.terrapraxis.org',      'terrapraxis'),
+  ('eiaglobal',   'Environmental Investigation Agency', 'Undercover investigations driving HFC and methane policy wins worldwide.',                'climate', 'https://eia-global.org',           'eia-global')
+on conflict (id) do nothing;

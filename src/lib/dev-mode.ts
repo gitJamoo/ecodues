@@ -50,12 +50,16 @@ export const DEV_LEADERBOARD = [
 ];
 
 export const DEV_CHARITY_TOTALS = [
-  { charity_id: "charity-1", charity_name: "Clean Air Task Force",           total_donated: 87.45, donor_count: 6 },
-  { charity_id: "charity-2", charity_name: "Carbon180",                      total_donated: 32.10, donor_count: 3 },
-  { charity_id: "charity-3", charity_name: "Rewiring America",               total_donated: 18.72, donor_count: 4 },
-  { charity_id: "charity-4", charity_name: "Cool Earth",                     total_donated: 12.50, donor_count: 2 },
-  { charity_id: "charity-5", charity_name: "Coalition for Rainforest Nations",total_donated:  8.30, donor_count: 2 },
-  { charity_id: "charity-6", charity_name: "Founders Pledge Climate Fund",   total_donated:  5.20, donor_count: 1 },
+  { charity_id: "charity-1",  charity_name: "Clean Air Task Force",              total_donated: 87.45, donor_count: 6 },
+  { charity_id: "charity-2",  charity_name: "Carbon180",                         total_donated: 32.10, donor_count: 3 },
+  { charity_id: "charity-3",  charity_name: "Rewiring America",                  total_donated: 18.72, donor_count: 4 },
+  { charity_id: "charity-4",  charity_name: "Cool Earth",                        total_donated: 12.50, donor_count: 2 },
+  { charity_id: "charity-5",  charity_name: "Rainforest Trust",                  total_donated:  8.30, donor_count: 2 },
+  { charity_id: "charity-6",  charity_name: "Giving Green",                      total_donated:  5.20, donor_count: 1 },
+  { charity_id: "charity-7",  charity_name: "Project Drawdown",                  total_donated:  4.10, donor_count: 1 },
+  { charity_id: "charity-8",  charity_name: "RMI",                               total_donated:  3.60, donor_count: 1 },
+  { charity_id: "charity-9",  charity_name: "TerraPraxis",                       total_donated:  2.40, donor_count: 1 },
+  { charity_id: "charity-10", charity_name: "Environmental Investigation Agency", total_donated: 1.80, donor_count: 1 },
 ];
 
 // Every.org slugs verified against https://partners.every.org/v0.2/nonprofit/{slug}
@@ -63,10 +67,14 @@ export const DEV_CHARITY_TOTALS = [
 // If you add a charity, ping the API endpoint above first — a 404 slug is why
 // checkout previously landed on Every.org's generic $10 fallback page.
 export const DEV_CHARITIES = [
-  { id: "charity-1", name: "Clean Air Task Force",  description: "Founders Pledge top pick: neglected climate tech + policy (nuclear, geothermal, methane).", category: "climate", url: "https://www.catf.us",              everyOrgSlug: "clean-air-task-force" },
-  { id: "charity-2", name: "Carbon180",             description: "Giving Green recommended: U.S. policy advocacy for scalable carbon removal.",              category: "removal", url: "https://carbon180.org",            everyOrgSlug: "carbon180" },
-  { id: "charity-3", name: "Rewiring America",      description: "Electrifying homes and buildings to slash U.S. household emissions.",                      category: "energy",  url: "https://www.rewiringamerica.org",  everyOrgSlug: "rewiring-america-inc" },
-  { id: "charity-4", name: "Cool Earth",            description: "Community-led rainforest protection with indigenous partners.",                            category: "nature",  url: "https://www.coolearth.org",        everyOrgSlug: "coolearth" },
-  { id: "charity-5", name: "Rainforest Trust",      description: "Purchases and permanently protects tropical forest habitat.",                               category: "nature",  url: "https://www.rainforesttrust.org",  everyOrgSlug: "rainforest-trust" },
-  { id: "charity-6", name: "Giving Green",          description: "Evidence-based research identifying the highest-impact climate giving opportunities.",     category: "climate", url: "https://www.givinggreen.earth",    everyOrgSlug: "giving-green" },
+  { id: "charity-1",  name: "Clean Air Task Force",              description: "Founders Pledge top pick: neglected climate tech + policy (nuclear, geothermal, methane).",  category: "climate", url: "https://www.catf.us",              everyOrgSlug: "clean-air-task-force" },
+  { id: "charity-2",  name: "Carbon180",                         description: "Giving Green recommended: U.S. policy advocacy for scalable carbon removal.",                category: "removal", url: "https://carbon180.org",            everyOrgSlug: "carbon180" },
+  { id: "charity-3",  name: "Rewiring America",                  description: "Electrifying homes and buildings to slash U.S. household emissions.",                        category: "energy",  url: "https://www.rewiringamerica.org",  everyOrgSlug: "rewiring-america-inc" },
+  { id: "charity-4",  name: "Cool Earth",                        description: "Community-led rainforest protection with indigenous partners.",                              category: "nature",  url: "https://www.coolearth.org",        everyOrgSlug: "coolearth" },
+  { id: "charity-5",  name: "Rainforest Trust",                  description: "Purchases and permanently protects tropical forest habitat.",                                 category: "nature",  url: "https://www.rainforesttrust.org",  everyOrgSlug: "rainforest-trust" },
+  { id: "charity-6",  name: "Giving Green",                      description: "Evidence-based research identifying the highest-impact climate giving opportunities.",       category: "climate", url: "https://www.givinggreen.earth",    everyOrgSlug: "giving-green" },
+  { id: "charity-7",  name: "Project Drawdown",                  description: "Research and analysis mapping the most effective climate solutions worldwide.",              category: "climate", url: "https://drawdown.org",             everyOrgSlug: "drawdown" },
+  { id: "charity-8",  name: "RMI",                               description: "Market-based decarbonization across power, industry, buildings, and transport.",             category: "energy",  url: "https://rmi.org",                  everyOrgSlug: "rmi" },
+  { id: "charity-9",  name: "TerraPraxis",                       description: "Repowering coal plants with advanced nuclear; hard-to-abate industrial decarbonization.",    category: "energy",  url: "https://www.terrapraxis.org",      everyOrgSlug: "terrapraxis" },
+  { id: "charity-10", name: "Environmental Investigation Agency", description: "Undercover investigations driving HFC and methane policy wins worldwide.",                  category: "climate", url: "https://eia-global.org",           everyOrgSlug: "eia-global" },
 ];
