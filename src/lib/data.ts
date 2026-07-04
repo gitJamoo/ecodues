@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { DEV_MODE, DEV_USER, DEV_PROFILE, DEV_CHARITIES, DEV_ESTIMATES, DEV_LEDGER, DEV_USAGE } from "@/lib/dev-mode";
+import { DEV_MODE, DEV_USER, DEV_PROFILE, DEV_CHARITIES, DEV_ESTIMATES, DEV_LEDGER, DEV_USAGE, DEV_LEADERBOARD, DEV_CHARITY_TOTALS } from "@/lib/dev-mode";
 
 export async function getSessionUser() {
   if (DEV_MODE) return { supabase: null as never, user: DEV_USER as never };
@@ -45,4 +45,16 @@ export async function getConnections() {
   const { supabase, user } = await getSessionUser();
   const { data } = await supabase.from("provider_connections").select("*").eq("user_id", user.id).order("created_at");
   return data ?? [];
+}
+
+export async function getLeaderboardData() {
+  if (DEV_MODE) {
+    return { leaderboard: DEV_LEADERBOARD, charityTotals: DEV_CHARITY_TOTALS };
+  }
+  const supabase = await createClient();
+  const [{ data: leaderboard }, { data: charityTotals }] = await Promise.all([
+    supabase.rpc("get_leaderboard", { limit_n: 20 }),
+    supabase.rpc("get_charity_totals"),
+  ]);
+  return { leaderboard: leaderboard ?? [], charityTotals: charityTotals ?? [] };
 }

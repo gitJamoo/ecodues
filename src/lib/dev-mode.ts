@@ -38,6 +38,26 @@ export const DEV_USAGE = [
   { id: "use-4", user_id: DEV_USER.id, period: "2026-05", provider: "openai",     model: "gpt-4o-mini",                       input_tokens: 2000000, output_tokens: 400000, spend_usd: 2.00, source: "api_key", created_at: "2026-05-31T00:00:00.000Z" },
 ];
 
+export const DEV_LEADERBOARD = [
+  { rank: 1, display_name: "EarthLover42",   total_donated: 48.20, donation_count: 12 },
+  { rank: 2, display_name: "ClimateNerd",    total_donated: 32.55, donation_count:  8 },
+  { rank: 3, display_name: "GreenCoder",     total_donated: 19.80, donation_count:  5 },
+  { rank: 4, display_name: "Dev User",       total_donated:  1.06, donation_count:  3 },
+  { rank: 5, display_name: "SolarPunk",      total_donated: 15.40, donation_count:  4 },
+  { rank: 6, display_name: "Anonymous",      total_donated: 12.00, donation_count:  3 },
+  { rank: 7, display_name: "DataCarbon",     total_donated:  9.75, donation_count:  3 },
+  { rank: 8, display_name: "BytesForEarth",  total_donated:  7.20, donation_count:  2 },
+];
+
+export const DEV_CHARITY_TOTALS = [
+  { charity_id: "charity-1", charity_name: "Clean Air Task Force",           total_donated: 87.45, donor_count: 6 },
+  { charity_id: "charity-2", charity_name: "Carbon180",                      total_donated: 32.10, donor_count: 3 },
+  { charity_id: "charity-3", charity_name: "Rewiring America",               total_donated: 18.72, donor_count: 4 },
+  { charity_id: "charity-4", charity_name: "Cool Earth",                     total_donated: 12.50, donor_count: 2 },
+  { charity_id: "charity-5", charity_name: "Coalition for Rainforest Nations",total_donated:  8.30, donor_count: 2 },
+  { charity_id: "charity-6", charity_name: "Founders Pledge Climate Fund",   total_donated:  5.20, donor_count: 1 },
+];
+
 export const DEV_CHARITIES = [
   { id: "charity-1", name: "Clean Air Task Force",          description: "Accelerating zero-carbon energy through policy and innovation.", category: "climate", url: "https://www.catf.us",                                             everyOrgSlug: "clean-air-task-force" },
   { id: "charity-2", name: "Carbon180",                     description: "Scaling carbon removal solutions.",                              category: "climate", url: "https://carbon180.org",                                           everyOrgSlug: "carbon-180" },

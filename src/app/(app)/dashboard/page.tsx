@@ -108,7 +108,7 @@ export default async function DashboardPage() {
           {periods.length > 0 && (
             <div>
               <h2 className="text-sm font-medium mb-3">By period</h2>
-              <div className="rounded-xl border border-border overflow-hidden bg-white">
+              <div className="rounded-xl border border-border overflow-hidden bg-card">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-border bg-muted/50">
@@ -141,7 +141,7 @@ export default async function DashboardPage() {
           {ledger.length > 0 ? (
             <div>
               <h2 className="text-sm font-medium mb-3">Payment history</h2>
-              <div className="rounded-xl border border-border overflow-hidden bg-white">
+              <div className="rounded-xl border border-border overflow-hidden bg-card">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-border bg-muted/50">

@@ -68,7 +68,7 @@ export function UsageTable({ usage, multiplier }: { usage: UsageRecord[]; multip
 
   return (
     <>
-      <div className="rounded-xl border border-border overflow-hidden bg-white">
+      <div className="rounded-xl border border-border overflow-hidden bg-card">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border bg-muted/50">

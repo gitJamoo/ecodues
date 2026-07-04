@@ -45,7 +45,7 @@ export default async function DonationsPage() {
       )}
 
       {ledger.length > 0 ? (
-        <div className="rounded-xl border border-border overflow-hidden bg-white">
+        <div className="rounded-xl border border-border overflow-hidden bg-card">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/50">

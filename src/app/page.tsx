@@ -58,7 +58,7 @@ export default function Home() {
         Before this zone: video frozen at frame 0.
         After this zone: video frozen at last frame.
       */}
-      <VideoBackdrop src="/hero_video.mp4" scrollHeight="300vh" />
+      <VideoBackdrop src="/hero_video.mp4" />
 
       {/* Steps — video frozen at last frame here */}
       <section className="max-w-4xl mx-auto px-6 pb-24 grid grid-cols-1 gap-6 sm:grid-cols-3">

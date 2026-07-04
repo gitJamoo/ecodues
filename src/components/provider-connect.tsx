@@ -181,7 +181,7 @@ export function ProviderConnect({ connections }: { connections: Connection[] }) 
             </div>
 
             <Tabs defaultValue="easy">
-              <TabsList className="mb-3 bg-white/70">
+              <TabsList className="mb-3 bg-muted">
                 <TabsTrigger value="easy" className="text-xs">Easy entry</TabsTrigger>
                 <TabsTrigger value="paste" className="text-xs">Paste & parse</TabsTrigger>
                 {provTiers.length > 0 && <TabsTrigger value="tier" className="text-xs">Subscription</TabsTrigger>}
@@ -190,7 +190,7 @@ export function ProviderConnect({ connections }: { connections: Connection[] }) 
 
               {/* ── Easy entry tab ── */}
               <TabsContent value="easy" className="space-y-3">
-                <div className="rounded-lg bg-white/80 border border-white px-3 py-2.5 text-xs text-muted-foreground space-y-1">
+                <div className="rounded-lg bg-muted border border-border px-3 py-2.5 text-xs text-muted-foreground space-y-1">
                   <p>{usageHint}</p>
                   <a
                     href={dashboardUrl}
@@ -208,7 +208,7 @@ export function ProviderConnect({ connections }: { connections: Connection[] }) 
                       type="number" min="0" step="0.01" placeholder="e.g. 12.50"
                       value={spend[pid] ?? ""}
                       onChange={e => setSpend(s => ({ ...s, [pid]: e.target.value }))}
-                      className="bg-white text-sm h-8"
+                      className="text-sm h-8"
                     />
                   </div>
                   <div>
@@ -217,7 +217,7 @@ export function ProviderConnect({ connections }: { connections: Connection[] }) 
                       type="number" min="0" placeholder="e.g. 1200000"
                       value={inputTok[pid] ?? ""}
                       onChange={e => setInputTok(t => ({ ...t, [pid]: e.target.value }))}
-                      className="bg-white text-sm h-8"
+                      className="text-sm h-8"
                     />
                   </div>
                   <div>
@@ -226,7 +226,7 @@ export function ProviderConnect({ connections }: { connections: Connection[] }) 
                       type="number" min="0" placeholder="e.g. 350000"
                       value={outputTok[pid] ?? ""}
                       onChange={e => setOutputTok(t => ({ ...t, [pid]: e.target.value }))}
-                      className="bg-white text-sm h-8"
+                      className="text-sm h-8"
                     />
                   </div>
                 </div>
@@ -238,7 +238,7 @@ export function ProviderConnect({ connections }: { connections: Connection[] }) 
 
               {/* ── Paste & parse tab ── */}
               <TabsContent value="paste" className="space-y-3">
-                <div className="rounded-lg bg-white/80 border border-white px-3 py-2.5 text-xs text-muted-foreground space-y-1">
+                <div className="rounded-lg bg-muted border border-border px-3 py-2.5 text-xs text-muted-foreground space-y-1">
                   <p>Open your usage dashboard, select all the text on the page, copy it, and paste it below. We&apos;ll extract the numbers automatically.</p>
                   <a
                     href={dashboardUrl}
@@ -251,7 +251,7 @@ export function ProviderConnect({ connections }: { connections: Connection[] }) 
                 </div>
 
                 <textarea
-                  className="w-full rounded-lg border border-border bg-white text-xs p-3 h-28 resize-none focus:outline-none focus:ring-1 focus:ring-ring"
+                  className="w-full rounded-lg border border-border bg-card text-xs p-3 h-28 resize-none focus:outline-none focus:ring-1 focus:ring-ring"
                   placeholder={`Paste anything from your ${label} dashboard here — billing summary, usage breakdown, even a screenshot's copied text…`}
                   value={pasteText[pid] ?? ""}
                   onChange={e => {
@@ -268,7 +268,7 @@ export function ProviderConnect({ connections }: { connections: Connection[] }) 
                 )}
 
                 {p && (
-                  <div className="rounded-lg border bg-white p-3 space-y-2">
+                  <div className="rounded-lg border bg-card p-3 space-y-2">
                     <div className="flex items-center gap-1.5 text-xs font-medium text-foreground">
                       <CheckCircle2 className="w-3.5 h-3.5 text-primary" />
                       Parsed {p.confidence === "high" ? "successfully" : "with low confidence"}
@@ -303,7 +303,7 @@ export function ProviderConnect({ connections }: { connections: Connection[] }) 
                     <p className="text-xs text-muted-foreground">Pick your consumer plan. Adjust the usage slider to match how heavily you use it.</p>
 
                     <Select onValueChange={(v: string | null) => { if (v) setTiers(t => ({ ...t, [pid]: v })); }}>
-                      <SelectTrigger className="bg-white text-sm h-8">
+                      <SelectTrigger className="text-sm h-8">
                         <SelectValue placeholder="Pick your plan" />
                       </SelectTrigger>
                       <SelectContent>
@@ -334,7 +334,7 @@ export function ProviderConnect({ connections }: { connections: Connection[] }) 
                     )}
 
                     {estimate && (
-                      <div className="rounded-lg bg-white border border-border px-3 py-2.5 text-xs space-y-1">
+                      <div className="rounded-lg bg-card border border-border px-3 py-2.5 text-xs space-y-1">
                         <p className="font-medium text-foreground">Estimated monthly impact</p>
                         <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-muted-foreground">
                           <span>Input tokens</span>  <span className="tabular-nums text-right">{tokens(scaledIn)}</span>
@@ -366,7 +366,7 @@ export function ProviderConnect({ connections }: { connections: Connection[] }) 
                     placeholder={`${label} API key`}
                     value={keys[pid] ?? ""}
                     onChange={e => setKeys(k => ({ ...k, [pid]: e.target.value }))}
-                    className="bg-white text-sm h-8"
+                    className="text-sm h-8"
                   />
                   <Button size="sm" className="h-8 shrink-0" onClick={() => handleApiKey(pid)} disabled={loading === pid + "_key"}>
                     {loading === pid + "_key" ? "…" : "Connect"}

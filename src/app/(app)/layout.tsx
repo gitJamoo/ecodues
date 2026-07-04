@@ -1,17 +1,18 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { LayoutDashboard, Plug, Heart, BookOpen, Settings, LogOut } from "lucide-react";
+import { LayoutDashboard, Plug, Heart, Trophy, BookOpen, Settings, LogOut } from "lucide-react";
 import { DEV_MODE, DEV_USER } from "@/lib/dev-mode";
 import { DevBanner } from "@/components/dev-banner";
 import { Logo } from "@/components/logo";
 
 const nav = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/providers",  label: "Providers",  icon: Plug },
-  { href: "/donations",  label: "Donations",  icon: Heart },
-  { href: "/methodology",label: "Methodology",icon: BookOpen },
-  { href: "/settings",   label: "Settings",   icon: Settings },
+  { href: "/dashboard",   label: "Dashboard",   icon: LayoutDashboard },
+  { href: "/providers",   label: "Providers",   icon: Plug },
+  { href: "/donations",   label: "Donations",   icon: Heart },
+  { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
+  { href: "/methodology", label: "Methodology", icon: BookOpen },
+  { href: "/settings",    label: "Settings",    icon: Settings },
 ];
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -29,7 +30,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     <div className={`flex min-h-screen bg-muted/30 ${DEV_MODE ? "pt-8" : ""}`}>
       {DEV_MODE && <DevBanner />}
       {/* Sidebar */}
-      <aside className={`w-56 fixed ${DEV_MODE ? "top-8" : "top-0"} bottom-0 left-0 bg-white border-r border-border flex flex-col z-10`}>
+      <aside className={`w-56 fixed ${DEV_MODE ? "top-8" : "top-0"} bottom-0 left-0 bg-card border-r border-border flex flex-col z-10`}>
         <div className="px-5 py-4 border-b border-border">
           <Link href="/dashboard">
             <Logo size={24} />
