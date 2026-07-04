@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { OnboardingWizard } from "./wizard";
 import { DEV_MODE, DEV_CHARITIES } from "@/lib/dev-mode";
 
+export const dynamic = "force-dynamic";
+
 export default async function OnboardingPage() {
   if (DEV_MODE) {
     return <OnboardingWizard charities={DEV_CHARITIES} />;

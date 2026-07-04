@@ -86,7 +86,7 @@ export default function MethodologyPage() {
             <li>We use a US-average grid intensity. Many large providers use significant renewable energy, which would reduce real-world emissions.</li>
             <li>Subscription tier estimates are derived from published average-usage studies and are inherently approximate.</li>
             <li>The social cost of carbon is contested. $190/t is the EPA 2023 central estimate; ranges from ~$50 to $400+ depending on discount rate and model.</li>
-            <li>We donate 2× the estimated damage by default, which is designed to overshoot under any reasonable uncertainty range.</li>
+            <li>The default 2× multiplier is designed to overshoot under any reasonable uncertainty range in the underlying estimates. We suggest the donation amount; you choose whether to pay it.</li>
           </ul>
         </section>
 

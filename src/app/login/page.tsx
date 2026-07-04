@@ -32,9 +32,14 @@ function GoogleIcon() {
 
 export default function LoginPage() {
   const router = useRouter();
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  // Lazy init: env vars are inlined at build time, but the module can be
+  // prerendered when they're absent. Placeholder keeps prerender happy;
+  // real values load at runtime in the browser bundle.
+  const [supabase] = useState(() =>
+    createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co",
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "placeholder-anon-key",
+    ),
   );
 
   const [email, setEmail] = useState("");

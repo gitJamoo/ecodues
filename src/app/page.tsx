@@ -44,7 +44,7 @@ export default function Home() {
         </h1>
         <p className="text-lg text-white/70 mb-10 max-w-xl mx-auto leading-relaxed">
           Connect your AI provider accounts. We measure your inference emissions using peer-reviewed research,
-          then automatically donate 2× the equivalent damage to climate charities every month.
+          then email you a one-click link every month to donate 2× the damage to climate charities you choose.
         </p>
         <Link href="/login">
           <Button size="lg" className="rounded-full px-8">Get started free</Button>
@@ -65,7 +65,7 @@ export default function Home() {
         {[
           { n: "1", title: "Connect", body: "Add your OpenRouter, OpenAI, Anthropic, or Gemini account. Or just pick your subscription tier." },
           { n: "2", title: "We measure", body: "We compute your monthly CO₂e footprint using published energy-per-token estimates and cite every constant." },
-          { n: "3", title: "We donate 2×", body: "On the 1st of each month, we donate twice your damage to a climate charity you choose. Via Every.org — we never hold your money." },
+          { n: "3", title: "You donate 2×", body: "On the 1st of each month, we email you a one-click Every.org link pre-filled at 2× your damage. You click, you pay, you get a tax receipt. We never touch your money." },
         ].map(({ n, title, body }) => (
           <div key={n} className="rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm p-6">
             <div className="w-8 h-8 rounded-full bg-white/10 text-white text-sm font-semibold flex items-center justify-center mb-4">{n}</div>

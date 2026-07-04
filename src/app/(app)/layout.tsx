@@ -6,6 +6,8 @@ import { DEV_MODE, DEV_USER } from "@/lib/dev-mode";
 import { DevBanner } from "@/components/dev-banner";
 import { Logo } from "@/components/logo";
 
+export const dynamic = "force-dynamic";
+
 const nav = [
   { href: "/dashboard",   label: "Dashboard",   icon: LayoutDashboard },
   { href: "/providers",   label: "Providers",   icon: Plug },
