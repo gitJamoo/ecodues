@@ -7,7 +7,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
+  --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -49,39 +49,40 @@
 }
 
 :root {
-  /* Stripe-inspired neutral palette with Countervail green accent */
+  /* EcoDues brand palette — Stripe-clean layout, forest-green accent */
+  /* Brand: bg #081B17 · grad #8CF76B→#33C35D · text #0F172A           */
   --background: oklch(1 0 0);
-  --foreground: oklch(0.22 0.015 260);
+  --foreground: oklch(0.13 0.025 258);          /* #0F172A slate-900    */
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.22 0.015 260);
+  --card-foreground: oklch(0.13 0.025 258);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.22 0.015 260);
-  --primary: oklch(0.52 0.16 155);
+  --popover-foreground: oklch(0.13 0.025 258);
+  --primary: oklch(0.69 0.19 145);              /* #33C35D brand green  */
   --primary-foreground: oklch(0.99 0 0);
   --secondary: oklch(0.975 0.003 260);
-  --secondary-foreground: oklch(0.22 0.015 260);
+  --secondary-foreground: oklch(0.13 0.025 258);
   --muted: oklch(0.975 0.003 260);
-  --muted-foreground: oklch(0.52 0.02 260);
+  --muted-foreground: oklch(0.50 0.018 258);
   --accent: oklch(0.975 0.003 260);
-  --accent-foreground: oklch(0.22 0.015 260);
+  --accent-foreground: oklch(0.13 0.025 258);
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.92 0.005 260);
   --input: oklch(0.92 0.005 260);
-  --ring: oklch(0.52 0.16 155);
-  --chart-1: oklch(0.52 0.16 155);
-  --chart-2: oklch(0.65 0.12 155);
-  --chart-3: oklch(0.78 0.08 155);
+  --ring: oklch(0.69 0.19 145);
+  --chart-1: oklch(0.69 0.19 145);             /* #33C35D              */
+  --chart-2: oklch(0.83 0.18 135);             /* #8CF76B light        */
+  --chart-3: oklch(0.55 0.15 145);
   --chart-4: oklch(0.45 0.14 200);
   --chart-5: oklch(0.35 0.10 260);
   --radius: 0.5rem;
   --sidebar: oklch(0.985 0.002 260);
-  --sidebar-foreground: oklch(0.22 0.015 260);
-  --sidebar-primary: oklch(0.52 0.16 155);
+  --sidebar-foreground: oklch(0.13 0.025 258);
+  --sidebar-primary: oklch(0.69 0.19 145);
   --sidebar-primary-foreground: oklch(0.99 0 0);
   --sidebar-accent: oklch(0.97 0.003 260);
-  --sidebar-accent-foreground: oklch(0.22 0.015 260);
+  --sidebar-accent-foreground: oklch(0.13 0.025 258);
   --sidebar-border: oklch(0.92 0.005 260);
-  --sidebar-ring: oklch(0.52 0.16 155);
+  --sidebar-ring: oklch(0.69 0.19 145);
 }
 
 .dark {
@@ -124,6 +125,5 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   }
 }

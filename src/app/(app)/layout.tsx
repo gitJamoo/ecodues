@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { LayoutDashboard, Plug, Heart, BookOpen, Settings, LogOut } from "lucide-react";
 import { DEV_MODE, DEV_USER } from "@/lib/dev-mode";
 import { DevBanner } from "@/components/dev-banner";
+import { Logo } from "@/components/logo";
 
 const nav = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -29,8 +30,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       {DEV_MODE && <DevBanner />}
       {/* Sidebar */}
       <aside className={`w-56 fixed ${DEV_MODE ? "top-8" : "top-0"} bottom-0 left-0 bg-white border-r border-border flex flex-col z-10`}>
-        <div className="px-5 py-5 border-b border-border">
-          <Link href="/dashboard" className="font-semibold text-base tracking-tight">EcoDues</Link>
+        <div className="px-5 py-4 border-b border-border">
+          <Link href="/dashboard">
+            <Logo size={24} />
+          </Link>
         </div>
         <nav className="flex-1 px-3 py-4 space-y-0.5">
           {nav.map(({ href, label, icon: Icon }) => (

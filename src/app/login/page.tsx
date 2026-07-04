@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import Link from "next/link";
+import { Logo } from "@/components/logo";
 
 function GithubIcon() {
   return (
@@ -93,7 +94,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-muted flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <Link href="/" className="font-semibold text-lg tracking-tight">EcoDues</Link>
+          <Link href="/"><Logo size={26} /></Link>
           <p className="text-sm text-muted-foreground mt-1">Make your AI use net-positive</p>
         </div>
 

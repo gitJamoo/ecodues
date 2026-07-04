@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Logo } from "@/components/logo";
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-white">
       {/* Nav */}
       <nav className="border-b border-border px-6 py-4 flex items-center justify-between max-w-6xl mx-auto">
-        <span className="font-semibold text-lg tracking-tight">EcoDues</span>
+        <Logo size={26} />
         <div className="flex items-center gap-6 text-sm text-muted-foreground">
           <Link href="/methodology" className="hover:text-foreground transition-colors">Methodology</Link>
           <Link href="/login">

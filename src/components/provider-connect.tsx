@@ -15,6 +15,7 @@ import { parseStatement } from "@/lib/parse-statement";
 import { usd, co2, tokens } from "@/lib/format";
 import { ReminderModal } from "@/components/reminder-modal";
 import { Slider } from "@/components/ui/slider";
+import { ProviderLogo } from "@/components/provider-logo";
 import { toast } from "sonner";
 import { CheckCircle2, AlertCircle, X, ExternalLink, ClipboardPaste, Info, CalendarDays } from "lucide-react";
 
@@ -161,7 +162,8 @@ export function ProviderConnect({ connections }: { connections: Connection[] }) 
         return (
           <div key={pid} className={`rounded-xl border p-5 ${color}`}>
             <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2.5">
+                <ProviderLogo provider={pid} size={28} className="rounded-lg overflow-hidden" />
                 <h3 className="font-medium text-sm">{label}</h3>
                 {conn && (
                   <Badge variant={conn.status === "error" ? "destructive" : "secondary"} className="text-xs">
