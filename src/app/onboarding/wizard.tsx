@@ -63,8 +63,10 @@ export function OnboardingWizard({ charities }: { charities: Charity[] }) {
         <div className="bg-white rounded-xl border border-border p-6 shadow-sm">
           {step === 0 && (
             <>
-              <h2 className="font-semibold text-base mb-1">Connect your AI usage</h2>
-              <p className="text-sm text-muted-foreground mb-5">Add an API key, pick your subscription tier, or enter last month&apos;s spend manually.</p>
+              <h2 className="font-semibold text-base mb-1">Tell us about your AI usage</h2>
+              <p className="text-sm text-muted-foreground mb-5">
+                No API key needed — you can paste your usage dashboard text, type in last month&apos;s spend, or pick your subscription plan. We&apos;ll handle the math.
+              </p>
               <ProviderConnect connections={[]} />
               <Button className="w-full mt-6" onClick={() => setStep(1)}>Continue</Button>
             </>
