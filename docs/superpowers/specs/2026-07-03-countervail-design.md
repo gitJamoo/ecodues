@@ -5,7 +5,7 @@
 
 ## One-liner
 
-A web app where you sign in, connect your AI usage (provider API keys, subscription tier, or manual entry), see a research-grounded estimate of your inference footprint in kg CO₂e and dollars, and automatically donate **2× the damage** to a climate charity every month — making your AI use net-positive, not just net-zero.
+A web app where you sign in, connect your AI usage (provider API keys, subscription tier, or manual entry), see a research-grounded estimate of your inference footprint in kg CO₂e and dollars, and automatically donate a **user-chosen multiple (1×–3×, default 2×) of the damage** to a climate charity on the 1st of every month — making your AI use net-positive, not just net-zero.
 
 ## Goals (PoC scope)
 
@@ -17,7 +17,7 @@ A web app where you sign in, connect your AI usage (provider API keys, subscript
 
 ## Non-goals (PoC)
 
-- Real payment collection (Every.org integration comes later; Lemon Squeezy is **not** suitable — it is a merchant of record for digital products and its terms don't cover donation facilitation).
+- Real payment collection in the PoC (the donation cycle is simulated; the production rail is the Every.org Partner API — see Donations. Lemon Squeezy is out of the picture entirely: it is a merchant of record for digital products and its terms don't cover donation facilitation).
 - Real OpenAI / Anthropic / Gemini usage connectors (stubbed behind the same interface; OpenRouter is the one real connector).
 - Native/mobile apps, teams/orgs, public profiles.
 
@@ -32,7 +32,7 @@ Two personas, both served from day one:
 
 - **Next.js (App Router) + TypeScript + Tailwind + shadcn/ui**
 - **Supabase**: auth + Postgres. API keys encrypted at rest (AES-256-GCM with a server-side secret; never sent to the client after entry).
-- **Vercel-style deployment target**; monthly cycle as a cron route (PoC also exposes a manual "Run monthly cycle" button).
+- **Vercel-style deployment target**; monthly cycle as a cron route that fires on the **1st of each month** (`0 0 1 * *`): polls each provider connection for the previous month's usage, computes emissions and damage, and creates the period's donation. The PoC also exposes a manual "Run monthly cycle" button that does the same thing on demand.
 
 ### Design language
 
@@ -40,7 +40,7 @@ Stripe's interface language with an eco palette: Inter font, generous whitespace
 
 ### Data model (Supabase Postgres)
 
-- `profiles` — user id, display name, multiplier (default 2.0), chosen charity id
+- `profiles` — user id, display name, multiplier (1.00–3.00 in 0.25 steps, default 2.00), chosen charity id
 - `provider_connections` — user id, provider (openrouter | openai | anthropic | gemini), kind (api_key | tier | manual), encrypted key or tier name, status
 - `usage_records` — user id, provider, model, period (month), input_tokens, output_tokens, spend_usd, source (api | tier_estimate | manual)
 - `emission_estimates` — usage_record id, kwh, kg_co2e, liters_water, damage_usd, methodology_version
@@ -63,8 +63,10 @@ A pure, dependency-free TypeScript module (`lib/emissions/`), unit-tested with V
 kWh      = tokens × Wh_per_token(model_class) × PUE / 1000
 kg CO₂e  = kWh × grid_intensity(kg/kWh)
 damage $ = kg CO₂e / 1000 × social_cost_of_carbon($/tCO₂e)
-donation = damage × multiplier (default 2×)
+donation = damage × multiplier
 ```
+
+- Multiplier is user-set via a slider: **1× to 3× in 0.25 increments, default 2×** (shown in onboarding and Settings).
 
 - Constants sourced from published research (Luccioni et al., Epoch AI estimates, EPA social cost of carbon ≈ $190/tCO₂e) and cited on a public **Methodology** page.
 - Model classes (small / medium / large / frontier) map model names → Wh/token bands so new models don't break the engine.
@@ -75,19 +77,19 @@ donation = damage × multiplier (default 2×)
 
 - Charity picker seeded with ~6 climate charities (e.g. Clean Air Task Force, Climeworks-adjacent removal funds, Rainforest Foundation).
 - Fake "add debit card" UI (Stripe-like card form, stores nothing but a masked placeholder).
-- "Run monthly cycle" computes the period's damage, writes a `donation_ledger` row with status `simulated`, and shows it in the ledger: "Would donate $0.30 to Clean Air Task Force."
-- Production path (documented, not built): Every.org Partner API — user → Every.org → charity; we never hold funds.
+- The monthly cycle (cron on the 1st, or the manual button) computes the prior period's damage, writes a `donation_ledger` row with status `simulated`, and shows it in the ledger: "Would donate $0.30 to Clean Air Task Force."
+- Production path (documented, not built in PoC): **Every.org Partner API** — the chosen rail because it minimizes our work: user → Every.org → charity, Every.org handles card processing, disbursement, receipts, and compliance; we never hold funds. The simulated ledger rows and cycle logic are shaped so swapping `simulated` → a real Every.org donation call is the only production change.
 
 ## Pages
 
 1. **Landing** — one-screen pitch, methodology teaser, CTA.
 2. **Login** — Supabase auth.
-3. **Onboarding** (3 steps): connect usage → pick charity + multiplier → add card (stub) → done.
+3. **Onboarding** (3 steps): connect usage → pick charity + multiplier slider (1×–3×, 0.25 steps, default 2×) → add card (stub) → done.
 4. **Dashboard** — big "footprint this month" stat, dollar damage, donation preview, trend chart, per-provider activity table.
 5. **Providers** — manage connections, add any of the three input types.
 6. **Donations** — ledger of simulated/completed donations.
 7. **Methodology** — public page with every constant, formula, and citation.
-8. **Settings** — profile, multiplier, charity, delete account.
+8. **Settings** — profile, multiplier slider, charity, delete account.
 
 ## Error handling
 
@@ -97,14 +99,14 @@ donation = damage × multiplier (default 2×)
 
 ## Testing
 
-- Vitest unit tests for the emissions engine (per-model-class math, dollarization, multiplier, edge cases: zero usage, unknown model → default class).
+- Vitest unit tests for the emissions engine (per-model-class math, dollarization, multiplier bounds/steps, edge cases: zero usage, unknown model → default class).
 - Everything else verified by running the app.
 
 ## Legal summary (research findings, not legal advice)
 
 - **Donation-API route eliminates the hard problems.** Money flows user → Every.org (itself a 501(c)(3)) → charity. No custody of funds → no money-transmitter licensing, no state charitable-solicitation registrations, no donor-receipt obligations (Every.org issues receipts).
 - **No nonprofit entity needed to launch.** An LLC (or nothing, pre-revenue) can operate a free tool that facilitates donations. Form your own 501(c)(3) later (Form 1023-EZ, $275 fee, ~2–6 months) only if you want grants or your own fund.
-- **Lemon Squeezy is the wrong rail** for donations (digital-products merchant of record; ToS mismatch). Every.org now; Stripe direct later if ever needed.
+- **Lemon Squeezy is dropped from the plan** (digital-products merchant of record; ToS mismatch with donations). Every.org Partner API is the rail.
 - Auto-charging a card monthly requires clear consent UX and easy cancellation regardless of rail (FTC negative-option rule).
 
 ## Name
