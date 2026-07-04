@@ -8,53 +8,92 @@ export function VideoBackdrop({ src }: { src: string }) {
   const overlayRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    const isMobile = window.matchMedia("(max-width: 768px)").matches;
-
-    if (isMobile) {
-      // On mobile: just autoplay; no scroll scrub to avoid iOS fixed-position jank
-      video.loop = true;
-      video.play().catch(() => {});
-      return;
-    }
-
-    // Desktop: scrub video with scroll
+    const video   = videoRef.current;
     const zone    = zoneRef.current;
     const overlay = overlayRef.current;
-    if (!zone || !overlay) return;
+    if (!video || !zone || !overlay) return;
 
-    video.pause();
+    let target  = 0;   // desired progress (0..1) from latest scroll
+    let current = 0;   // rendered progress (LERPs toward target)
+    let unlocked = false;
+    let rafId = 0;
 
-    const update = () => {
-      if (!video.duration) return;
-      const rect      = zone.getBoundingClientRect();
-      const scrollable = zone.offsetHeight - window.innerHeight;
-      if (scrollable <= 0) { video.currentTime = 0; return; }
-      const progress  = Math.max(0, Math.min(1, -rect.top / scrollable));
-      video.currentTime = progress * video.duration;
-      // Sine curve: dark (0.55) → bright (0.10) → dark (0.55)
-      overlay.style.opacity = String(0.55 - 0.45 * Math.sin(progress * Math.PI));
+    // iOS Safari won't seek a paused video that hasn't been played yet.
+    // Play + pause once to unlock currentTime writes.
+    const unlockSeek = () => {
+      if (unlocked) return;
+      const p = video.play();
+      if (p && typeof p.then === "function") {
+        p.then(() => { video.pause(); unlocked = true; }).catch(() => {});
+      } else {
+        video.pause(); unlocked = true;
+      }
     };
 
-    video.addEventListener("loadedmetadata", update);
-    window.addEventListener("scroll", update, { passive: true });
-    window.addEventListener("resize", update, { passive: true });
+    const readProgress = () => {
+      const scrollable = zone.offsetHeight - window.innerHeight;
+      if (scrollable <= 0) return 0;
+      const rect = zone.getBoundingClientRect();
+      return Math.max(0, Math.min(1, -rect.top / scrollable));
+    };
+
+    const onScroll = () => { target = readProgress(); };
+
+    // rAF loop: LERP current toward target, drive video + overlay from `current`
+    const tick = () => {
+      // 0.12 is buttery on 60Hz — smooths the scrub without feeling sluggish
+      current += (target - current) * 0.12;
+      // Snap to target on very small deltas to stop asymptotic drift
+      if (Math.abs(target - current) < 0.0005) current = target;
+
+      const dur = video.duration;
+      if (dur && !Number.isNaN(dur)) {
+        const t = current * dur;
+        // Skip trivially-small seeks (< ~half a frame at 30fps)
+        if (Math.abs(video.currentTime - t) > 0.016) {
+          try { video.currentTime = t; } catch { /* iOS not ready yet */ }
+        }
+      }
+      // Overlay: sine curve — dark (0.55) → bright (0.10) → dark (0.55)
+      overlay.style.opacity = String(0.55 - 0.45 * Math.sin(current * Math.PI));
+
+      rafId = requestAnimationFrame(tick);
+    };
+
+    const onReady = () => {
+      target  = readProgress();
+      current = target;
+      unlockSeek();
+    };
+
+    video.addEventListener("loadedmetadata", onReady);
+    video.addEventListener("canplay", onReady);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll, { passive: true });
+    // First user interaction on iOS — good moment to unlock
+    window.addEventListener("touchstart", unlockSeek, { passive: true });
+    window.addEventListener("click", unlockSeek);
+
+    if (video.readyState >= 1) onReady();
+    rafId = requestAnimationFrame(tick);
 
     return () => {
-      video.removeEventListener("loadedmetadata", update);
-      window.removeEventListener("scroll", update);
-      window.removeEventListener("resize", update);
+      cancelAnimationFrame(rafId);
+      video.removeEventListener("loadedmetadata", onReady);
+      video.removeEventListener("canplay", onReady);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      window.removeEventListener("touchstart", unlockSeek);
+      window.removeEventListener("click", unlockSeek);
     };
   }, []);
 
   return (
     <>
-      {/* translateZ(0) forces GPU compositing — fixes iOS Safari fixed-position jank */}
+      {/* translate3d forces a GPU compositing layer — fixes iOS fixed-position repaint jitter */}
       <div
         className="fixed inset-0 -z-10 pointer-events-none"
-        style={{ transform: "translateZ(0)", WebkitTransform: "translateZ(0)" } as React.CSSProperties}
+        style={{ transform: "translate3d(0,0,0)", WebkitTransform: "translate3d(0,0,0)" } as React.CSSProperties}
       >
         <video
           ref={videoRef}
@@ -62,6 +101,7 @@ export function VideoBackdrop({ src }: { src: string }) {
           muted
           playsInline
           preload="auto"
+          disableRemotePlayback
           className="w-full h-full object-cover"
         />
         <div ref={overlayRef} className="absolute inset-0 bg-black" style={{ opacity: 0.55 }} />
@@ -70,8 +110,8 @@ export function VideoBackdrop({ src }: { src: string }) {
           style={{ background: "radial-gradient(ellipse at center, transparent 25%, rgba(0,0,0,0.72) 100%)" }}
         />
       </div>
-      {/* Scroll zone — 150 dvh on mobile (shorter, avoids dead-space), 300 dvh on desktop */}
-      <div ref={zoneRef} className="h-[150dvh] sm:h-[300dvh]" aria-hidden />
+      {/* Scroll zone — dvh units respect iOS dynamic address bar */}
+      <div ref={zoneRef} className="h-[200dvh] sm:h-[300dvh]" aria-hidden />
     </>
   );
 }
