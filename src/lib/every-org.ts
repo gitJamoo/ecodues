@@ -63,7 +63,14 @@ export async function createCheckout({
 /**
  * Constructs a direct Every.org donate URL with amount pre-filled.
  * Works without a Partner API key — amount is a suggestion, not enforced.
+ *
+ * Format per https://docs.every.org/docs/donate-link :
+ *   query params → then the "#donate" fragment (which opens the modal).
+ *   `amount` accepts a plain number; `frequency` must be ONCE|MONTHLY|YEARLY.
+ *   Every.org enforces a $1 platform minimum.
  */
 export function directLink(slug: string, amountUsd: number): string {
-  return `https://www.every.org/${slug}?amount=${amountUsd.toFixed(2)}&frequency=MONTHLY#donate`;
+  const amt = Math.max(1, Math.ceil(amountUsd * 100) / 100);
+  const amtParam = Number.isInteger(amt) ? String(amt) : amt.toFixed(2);
+  return `https://www.every.org/${slug}?amount=${amtParam}&frequency=ONCE#donate`;
 }

@@ -52,7 +52,7 @@ export function renderDonationEmail(opts: {
     `Hi ${name},`,
     ``,
     `Your AI usage for ${periodLabel} caused about ${usd(damageUsd)} in climate damage.`,
-    `Your countervailing donation this month: ${usd(donationUsd)} to ${charityName}.`,
+    `Suggested donation this month: ${usd(donationUsd)} to ${charityName}.`,
     ``,
     `Pay via Every.org (secure, tax-deductible receipt):`,
     checkoutLink,
@@ -74,7 +74,7 @@ export function renderDonationEmail(opts: {
           <p style="margin:0 0 20px;font-size:15px;line-height:1.55;color:#4a5a4a">
             Hi ${escapeHtml(name)} — your AI usage this month caused an estimated
             <strong style="color:#1a1a1a">${usd(damageUsd)}</strong> in climate damage.
-            Time to countervail it.
+            Here&rsquo;s a one-click way to offset it.
           </p>
 
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f0f5f0;border-radius:8px;margin:0 0 24px">

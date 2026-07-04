@@ -26,7 +26,7 @@ export const DEV_ESTIMATES = [
 ];
 
 export const DEV_LEDGER = [
-  { id: "led-1", user_id: DEV_USER.id, period: "2026-07", damage_usd: 0.134, multiplier: 2, donation_usd: 0.268, charity_id: "charity-1", status: "pending",   checkout_link: "https://www.every.org/clean-air-task-force?amount=0.27&utm_source=ecodues&utm_campaign=dev", created_at: "2026-07-01T00:00:00.000Z", charities: { name: "Clean Air Task Force" } },
+  { id: "led-1", user_id: DEV_USER.id, period: "2026-07", damage_usd: 0.134, multiplier: 2, donation_usd: 0.268, charity_id: "charity-1", status: "pending",   checkout_link: "https://www.every.org/clean-air-task-force?amount=1&frequency=ONCE#donate", created_at: "2026-07-01T00:00:00.000Z", charities: { name: "Clean Air Task Force" } },
   { id: "led-2", user_id: DEV_USER.id, period: "2026-06", damage_usd: 0.224, multiplier: 2, donation_usd: 0.448, charity_id: "charity-1", status: "simulated", checkout_link: null,                                                                                                                    created_at: "2026-06-30T00:00:00.000Z", charities: { name: "Clean Air Task Force" } },
   { id: "led-3", user_id: DEV_USER.id, period: "2026-05", damage_usd: 0.173, multiplier: 2, donation_usd: 0.346, charity_id: "charity-1", status: "completed", checkout_link: null,                                                                                                                    created_at: "2026-05-31T00:00:00.000Z", charities: { name: "Clean Air Task Force" } },
 ];
