@@ -20,6 +20,7 @@ export const DEV_PROFILE = {
   pending_donation_usd: 1.24,
   last_reminder_period: "2026-06-01",
   donation_provider: "every_org" as const,
+  email_opt_out: false,
 };
 
 export const DEV_ESTIMATES = [

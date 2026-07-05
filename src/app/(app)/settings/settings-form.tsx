@@ -8,14 +8,20 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { MultiplierSlider } from "@/components/multiplier-slider";
 import { CharityPicker } from "@/components/charity-picker";
-import { saveSettings } from "@/lib/actions";
+import { saveSettings, deleteAccount } from "@/lib/actions";
 import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
+import {
+  Dialog, DialogContent, DialogDescription, DialogFooter,
+  DialogHeader, DialogTitle,
+} from "@/components/ui/dialog";
+import { DialogClose } from "@/components/ui/dialog";
 
 interface Profile {
   display_name: string | null;
   multiplier: number;
   charity_id: string | null;
+  email_opt_out: boolean | null;
 }
 interface Charity { id: string; name: string; description: string; category: string; url?: string; min_donation_usd?: number }
 
@@ -28,14 +34,26 @@ export function SettingsForm({ profile, charities, totalDamageUsd, tabUsd }: {
   const [name, setName] = useState(profile?.display_name ?? "");
   const [multiplier, setMultiplier] = useState(Number(profile?.multiplier ?? 2));
   const [charityId, setCharityId] = useState<string | null>(profile?.charity_id ?? null);
+  const [emailOptOut, setEmailOptOut] = useState(profile?.email_opt_out ?? false);
   const [saving, setSaving] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const { theme, setTheme } = useTheme();
 
   async function handleSave() {
     setSaving(true);
-    await saveSettings({ displayName: name, multiplier, charityId: charityId ?? undefined });
+    await saveSettings({ displayName: name, multiplier, charityId: charityId ?? undefined, emailOptOut });
     setSaving(false);
     toast.success("Settings saved");
+  }
+
+  async function handleDelete() {
+    setDeleting(true);
+    const res = await deleteAccount();
+    if (res && "error" in res) {
+      toast.error(res.error as string);
+      setDeleting(false);
+    }
   }
 
   const themes = [
@@ -98,9 +116,61 @@ export function SettingsForm({ profile, charities, totalDamageUsd, tabUsd }: {
 
       <Separator />
 
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <Label className="mb-0.5 block">Email notifications</Label>
+          <p className="text-sm text-muted-foreground">Monthly donation reminders and key-error alerts</p>
+        </div>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={!emailOptOut}
+          onClick={() => setEmailOptOut(!emailOptOut)}
+          className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${!emailOptOut ? "bg-primary" : "bg-muted-foreground/30"}`}
+        >
+          <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow-sm transition-transform ${!emailOptOut ? "translate-x-[18px]" : "translate-x-[3px]"}`} />
+        </button>
+      </div>
+
+      <Separator />
+
       <Button onClick={handleSave} disabled={saving} className="w-full">
         {saving ? "Saving…" : "Save settings"}
       </Button>
+
+      <Separator />
+
+      <div>
+        <Label className="mb-1 block text-destructive">Danger zone</Label>
+        <p className="text-sm text-muted-foreground mb-3">
+          Permanently delete your account and all associated data. This cannot be undone.
+        </p>
+        <Button
+          variant="outline"
+          className="border-destructive text-destructive hover:bg-destructive/10"
+          onClick={() => setDeleteOpen(true)}
+        >
+          Delete account
+        </Button>
+      </div>
+
+      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete account?</DialogTitle>
+            <DialogDescription>
+              This permanently deletes your account, all usage records, emission estimates, and donation history.
+              There is no undo.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose render={<Button variant="outline">Cancel</Button>} />
+            <Button variant="destructive" disabled={deleting} onClick={handleDelete}>
+              {deleting ? "Deleting…" : "Yes, delete my account"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

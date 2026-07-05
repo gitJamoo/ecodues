@@ -8,7 +8,10 @@ import {
 } from "@/lib/email";
 import { checkoutFor } from "@/lib/checkout";
 import { monthLabel } from "@/lib/format";
+import { unsubscribeUrl } from "@/lib/unsubscribe";
 import { NextResponse, type NextRequest } from "next/server";
+
+export const maxDuration = 300;
 
 type EmailVariant = "threshold" | "quarterly" | "recap" | "none";
 
@@ -35,7 +38,7 @@ export async function GET(request: NextRequest) {
       // Reload the profile — cycle just wrote the new tab balance.
       const { data: profile } = await supabase
         .from("profiles")
-        .select("id, display_name, charity_id, pending_donation_usd")
+        .select("id, display_name, charity_id, pending_donation_usd, email_opt_out")
         .eq("id", p.id)
         .single();
 
@@ -59,7 +62,7 @@ export async function GET(request: NextRequest) {
       let variant: EmailVariant = "none";
       let emailed = false;
 
-      if (!email) {
+      if (!email || profile?.email_opt_out) {
         results[p.id] = { donation: cycle.donationUsd, variant, emailed };
         continue;
       }
@@ -77,7 +80,7 @@ export async function GET(request: NextRequest) {
           checkoutLink: checkout.url,
           provider: checkout.provider,
         });
-        emailed = await sendEmail({ to: email, ...rendered });
+        emailed = await sendEmail({ to: email, ...rendered, unsubscribeUrl: unsubscribeUrl(p.id) });
       } else if (isQuarterEnd && tab > 0 && tab < charityMin) {
         const { data: reachable } = await supabase
           .from("charities")
@@ -95,7 +98,7 @@ export async function GET(request: NextRequest) {
             minDonationUsd: Number(c.min_donation_usd),
           })),
         });
-        emailed = await sendEmail({ to: email, ...rendered });
+        emailed = await sendEmail({ to: email, ...rendered, unsubscribeUrl: unsubscribeUrl(p.id) });
       } else if (cycle.donationUsd > 0) {
         variant = "recap";
         const rendered = renderMonthlyRecap({
@@ -107,7 +110,7 @@ export async function GET(request: NextRequest) {
           charityName,
           minDonationUsd: charityMin,
         });
-        emailed = await sendEmail({ to: email, ...rendered });
+        emailed = await sendEmail({ to: email, ...rendered, unsubscribeUrl: unsubscribeUrl(p.id) });
       }
 
       if (emailed) {
@@ -118,7 +121,8 @@ export async function GET(request: NextRequest) {
       }
 
       results[p.id] = { donation: cycle.donationUsd, variant, emailed };
-    } catch {
+    } catch (err) {
+      console.error("[cron/monthly] user", p.id, err);
       results[p.id] = { donation: -1, variant: "none", emailed: false };
     }
   }

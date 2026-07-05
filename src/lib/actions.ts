@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { encryptSecret } from "@/lib/crypto";
 import { connectorFor } from "@/lib/providers";
 import type { ProviderId } from "@/lib/providers/types";
@@ -77,6 +78,7 @@ export async function saveSettings(form: {
   multiplier?: number;
   charityId?: string;
   cardLast4?: string;
+  emailOptOut?: boolean;
 }) {
   if (DEV_MODE) return { ok: true };
   const { supabase, user } = await requireUser();
@@ -85,10 +87,22 @@ export async function saveSettings(form: {
   if (form.multiplier !== undefined) patch.multiplier = clampMultiplier(form.multiplier);
   if (form.charityId !== undefined) patch.charity_id = form.charityId;
   if (form.cardLast4 !== undefined) patch.card_last4 = form.cardLast4;
+  if (form.emailOptOut !== undefined) patch.email_opt_out = form.emailOptOut;
   await supabase.from("profiles").update(patch).eq("id", user.id);
   revalidatePath("/settings");
   revalidatePath("/dashboard");
   return { ok: true };
+}
+
+export async function deleteAccount() {
+  if (DEV_MODE) return { ok: true };
+  const { user } = await requireUser();
+  const admin = createAdminClient();
+  const { error } = await admin.auth.admin.deleteUser(user.id);
+  if (error) return { error: error.message };
+  const supabase = await createClient();
+  await supabase.auth.signOut();
+  redirect("/");
 }
 
 export async function completeOnboarding() {

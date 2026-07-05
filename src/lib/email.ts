@@ -6,13 +6,26 @@ interface SendArgs {
   subject: string;
   html: string;
   text: string;
+  unsubscribeUrl?: string;
 }
 
-export async function sendEmail({ to, subject, html, text }: SendArgs): Promise<boolean> {
+export async function sendEmail({ to, subject, html, text, unsubscribeUrl }: SendArgs): Promise<boolean> {
   const key = process.env.RESEND_API_KEY;
   if (!key) {
     console.warn("[email] RESEND_API_KEY not set — skipping send to", to);
     return false;
+  }
+  let finalHtml = html;
+  let finalText = text;
+  const extra: Record<string, unknown> = {};
+  if (unsubscribeUrl) {
+    const u = escapeAttr(unsubscribeUrl);
+    finalHtml = html.replace(
+      "</body></html>",
+      `      <div style="max-width:560px;font-size:11px;color:#9aa89a;margin-top:4px;text-align:center"><a href="${u}" style="color:#9aa89a;text-decoration:underline">Unsubscribe from these emails</a></div>\n</body></html>`,
+    );
+    finalText = text + `\n\nUnsubscribe: ${unsubscribeUrl}`;
+    extra.headers = { "List-Unsubscribe": `<${unsubscribeUrl}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" };
   }
   try {
     const res = await fetch(RESEND_API, {
@@ -21,7 +34,7 @@ export async function sendEmail({ to, subject, html, text }: SendArgs): Promise<
         Authorization: `Bearer ${key}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ from: FROM, to, subject, html, text }),
+      body: JSON.stringify({ from: FROM, to, subject, html: finalHtml, text: finalText, ...extra }),
       cache: "no-store",
     });
     if (!res.ok) {
@@ -267,6 +280,90 @@ export function renderQuarterlyDigest(opts: {
           <p style="margin:0 0 0;font-size:13px;line-height:1.55;color:#7a8a7a">
             Switch your selected charity in your dashboard — your tab carries over.
             Or stick with ${escapeHtml(currentCharity.name)} and keep building.
+          </p>
+        </td></tr>
+      </table>
+      <div style="max-width:560px;font-size:11px;color:#9aa89a;margin-top:16px;text-align:center">
+        Sent by EcoDues · offset your AI footprint
+      </div>
+    </td></tr>
+  </table>
+</body></html>`;
+
+  return { subject, html, text };
+}
+
+export function renderKeyErrorEmail(opts: {
+  displayName: string | null;
+  brokenProviders: string[];
+  reconnectUrl: string;
+}): { subject: string; html: string; text: string } {
+  const { displayName, brokenProviders, reconnectUrl } = opts;
+  const name = displayName?.trim() || "there";
+  const list = brokenProviders.join(", ");
+  const subject =
+    brokenProviders.length === 1
+      ? `Reconnect your ${brokenProviders[0]} key — auto-tracking is paused`
+      : `Reconnect ${brokenProviders.length} API keys — auto-tracking is paused`;
+
+  const text = [
+    `Hi ${name},`,
+    ``,
+    `We tried to validate your API keys as part of our weekly health check and`,
+    `one or more didn't work: ${list}.`,
+    ``,
+    `That means we can't auto-pull usage from ${brokenProviders.length === 1 ? "that provider" : "those providers"}`,
+    `on the 1st when the monthly cycle runs. Nothing bad happens — we just won't`,
+    `count that traffic against your offset unless you reconnect.`,
+    ``,
+    `Fix it in ~30 seconds:`,
+    reconnectUrl,
+    ``,
+    `Common reasons keys stop working:`,
+    `  · You rotated it in the provider dashboard`,
+    `  · The Admin key was revoked by an org owner`,
+    `  · The key expired (Anthropic Admin keys don't expire; OpenAI Admin keys can)`,
+    ``,
+    `— EcoDues`,
+  ].join("\n");
+
+  const listHtml = brokenProviders
+    .map(
+      (p) => `
+              <tr><td style="padding:8px 0;border-top:1px solid #e5e7e5">
+                <span style="font-family:ui-monospace,SFMono-Regular,monospace;font-size:13px;color:#1a1a1a">${escapeHtml(p)}</span>
+              </td></tr>`,
+    )
+    .join("");
+
+  const html = `<!doctype html>
+<html><body style="margin:0;padding:0;background:#f6f7f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#1a1a1a">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding:32px 16px">
+    <tr><td align="center">
+      <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e5e7e5">
+        <tr><td style="padding:32px 32px 24px">
+          <div style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:#a15a10;margin-bottom:8px">EcoDues · action needed</div>
+          <h1 style="margin:0 0 12px;font-size:22px;font-weight:600;letter-spacing:-0.01em">Reconnect your API ${brokenProviders.length === 1 ? "key" : "keys"}</h1>
+          <p style="margin:0 0 20px;font-size:15px;line-height:1.55;color:#4a5a4a">
+            Hi ${escapeHtml(name)} — during this week&rsquo;s health check we couldn&rsquo;t validate
+            ${brokenProviders.length === 1 ? "your key for" : "your keys for"}:
+          </p>
+
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#fff8e6;border:1px solid #f5d67a;border-radius:8px;padding:8px 16px;margin:0 0 20px">
+            ${listHtml}
+          </table>
+
+          <p style="margin:0 0 20px;font-size:14px;line-height:1.55;color:#4a5a4a">
+            Auto-pull is paused for ${brokenProviders.length === 1 ? "that provider" : "those providers"} until you reconnect.
+            Reconnecting takes ~30 seconds — just paste a fresh Admin key.
+          </p>
+
+          <a href="${escapeAttr(reconnectUrl)}" style="display:inline-block;background:#1f5a2f;color:#ffffff;text-decoration:none;font-weight:600;font-size:15px;padding:14px 24px;border-radius:8px">Reconnect now →</a>
+
+          <p style="margin:24px 0 0;font-size:12px;line-height:1.55;color:#7a8a7a">
+            Not sure why it broke? Common reasons: you rotated it, an org owner revoked it,
+            or (for OpenAI) the Admin key expired. EcoDues never touches your keys after
+            you paste them — they&rsquo;re encrypted with AES-256 at rest.
           </p>
         </td></tr>
       </table>
