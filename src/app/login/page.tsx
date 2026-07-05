@@ -168,8 +168,12 @@ export default function LoginPage() {
           </Tabs>
         </div>
 
-        <p className="text-center text-xs text-muted-foreground mt-6">
-          <Link href="/methodology" className="underline underline-offset-2">Read our methodology</Link>
+        <p className="text-center text-xs text-muted-foreground mt-6 space-x-2">
+          <Link href="/methodology" className="underline underline-offset-2">Methodology</Link>
+          <span aria-hidden="true">·</span>
+          <Link href="/privacy" className="underline underline-offset-2">Privacy</Link>
+          <span aria-hidden="true">·</span>
+          <Link href="/terms" className="underline underline-offset-2">Terms</Link>
         </p>
       </div>
     </div>
