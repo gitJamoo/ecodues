@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 // Every.org sends a POST to this endpoint when a donation is confirmed.
 // Configure the webhook URL in your Every.org partner dashboard:
@@ -9,6 +9,16 @@ import { createClient } from "@/lib/supabase/server";
 // Every.org docs: https://docs.every.org/docs/webhooks
 
 export async function POST(req: NextRequest) {
+  // If the token is not configured, refuse all requests — the endpoint is not
+  // ready for use until EVERY_ORG_WEBHOOK_TOKEN is set in the environment.
+  const webhookToken = process.env.EVERY_ORG_WEBHOOK_TOKEN;
+  if (!webhookToken) {
+    return NextResponse.json(
+      { error: "Webhook not configured: EVERY_ORG_WEBHOOK_TOKEN is not set" },
+      { status: 503 },
+    );
+  }
+
   let body: Record<string, unknown>;
   try {
     body = await req.json();
@@ -16,13 +26,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  // Validate webhook token if configured
-  const webhookToken = process.env.EVERY_ORG_WEBHOOK_TOKEN;
-  if (webhookToken) {
-    const incoming = req.headers.get("x-every-org-webhook-token") ?? body.webhookToken;
-    if (incoming !== webhookToken) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  // Validate webhook token — required; 401 if missing or wrong.
+  const incoming = req.headers.get("x-every-org-webhook-token") ?? body.webhookToken;
+  if (incoming !== webhookToken) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   // We only care about successful charges
@@ -47,10 +54,12 @@ export async function POST(req: NextRequest) {
   const userId = partnerDonationId.slice(0, colonIdx);
   const period = partnerDonationId.slice(colonIdx + 1);
 
-  const supabase = await createClient();
+  // Use the service-role admin client so RLS does not block the update —
+  // a webhook request has no user session.
+  const supabase = createAdminClient();
   const { error } = await supabase
     .from("donation_ledger")
-    .update({ status: "completed", every_org_id: everyOrgId ?? null })
+    .update({ status: "paid", every_org_id: everyOrgId ?? null })
     .eq("user_id", userId)
     .eq("period", period);
 
