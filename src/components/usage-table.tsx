@@ -68,8 +68,8 @@ export function UsageTable({ usage, multiplier }: { usage: UsageRecord[]; multip
 
   return (
     <>
-      <div className="rounded-xl border border-border overflow-hidden bg-card">
-        <table className="w-full text-sm">
+      <div className="rounded-xl border border-border overflow-x-auto bg-card">
+        <table className="w-full text-sm min-w-[640px]">
           <thead>
             <tr className="border-b border-border bg-muted/50">
               <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Provider</th>

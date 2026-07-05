@@ -31,8 +31,28 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   return (
     <div className={`flex min-h-screen bg-muted/30 ${DEV_MODE ? "pt-8" : ""}`}>
       {DEV_MODE && <DevBanner />}
-      {/* Sidebar */}
-      <aside className={`w-56 fixed ${DEV_MODE ? "top-8" : "top-0"} bottom-0 left-0 bg-card border-r border-border flex flex-col z-10`}>
+
+      {/* Mobile top nav — horizontal-scrollable, hidden on sm+ */}
+      <nav className={`sm:hidden fixed ${DEV_MODE ? "top-8" : "top-0"} left-0 right-0 z-20 bg-card border-b border-border`}>
+        <div className="flex items-center gap-1 px-3 py-2 overflow-x-auto">
+          <Link href="/dashboard" className="shrink-0 mr-1">
+            <Logo size={20} />
+          </Link>
+          {nav.map(({ href, label, icon: Icon }) => (
+            <Link
+              key={href}
+              href={href}
+              className="flex items-center gap-1.5 shrink-0 px-2.5 py-1.5 text-xs rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors whitespace-nowrap"
+            >
+              <Icon className="w-3.5 h-3.5" />
+              {label}
+            </Link>
+          ))}
+        </div>
+      </nav>
+
+      {/* Sidebar — hidden on mobile, fixed on sm+ */}
+      <aside className={`hidden sm:flex sm:flex-col w-56 fixed ${DEV_MODE ? "top-8" : "top-0"} bottom-0 left-0 bg-card border-r border-border z-10`}>
         <div className="px-5 py-4 border-b border-border">
           <Link href="/dashboard">
             <Logo size={24} />
@@ -64,8 +84,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         </div>
       </aside>
 
-      {/* Main */}
-      <main className="ml-56 flex-1 px-8 py-10 max-w-5xl">
+      {/* Main — full width on mobile, offset by sidebar on sm+ */}
+      <main className="sm:ml-56 flex-1 px-4 sm:px-8 pb-10 pt-14 sm:pt-10 max-w-5xl">
         {children}
       </main>
     </div>

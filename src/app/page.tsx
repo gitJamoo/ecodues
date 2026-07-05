@@ -14,13 +14,13 @@ function GithubIcon({ className }: { className?: string }) {
 
 export default function Home() {
   return (
-    <div className="min-h-screen text-white">
+    <div className="min-h-screen text-white overflow-x-hidden">
       {/* Nav */}
-      <nav className="border-b border-white/10 px-6 py-4 flex items-center justify-between max-w-6xl mx-auto">
+      <nav className="border-b border-white/10 px-4 sm:px-6 py-4 flex items-center justify-between max-w-6xl mx-auto">
         <Logo size={26} />
-        <div className="flex items-center gap-6 text-sm text-white/70">
-          <Link href="#about" className="hover:text-white transition-colors">About</Link>
-          <Link href="/methodology" className="hover:text-white transition-colors">Methodology</Link>
+        <div className="flex items-center gap-3 sm:gap-6 text-sm text-white/70">
+          <Link href="#about" className="hover:text-white transition-colors hidden sm:block">About</Link>
+          <Link href="/methodology" className="hover:text-white transition-colors hidden sm:block">Methodology</Link>
           <Link href="/login">
             <Button
               variant="outline"
@@ -38,11 +38,11 @@ export default function Home() {
         <div className="inline-flex items-center gap-2 rounded-full bg-white/10 border border-white/20 px-3 py-1 text-xs font-medium text-white/80 mb-6">
           Open source · Powered by Every.org
         </div>
-        <h1 className="text-5xl font-semibold tracking-tight leading-tight mb-6 text-white">
+        <h1 className="text-3xl sm:text-5xl font-semibold tracking-tight leading-tight mb-6 text-white">
           Your AI has a footprint.<br />
           <span className="text-primary">Erase it — twice.</span>
         </h1>
-        <p className="text-lg text-white/70 mb-10 max-w-xl mx-auto leading-relaxed">
+        <p className="text-base sm:text-lg text-white/70 mb-10 max-w-xl mx-auto leading-relaxed">
           Connect your AI provider accounts. We measure your inference emissions using peer-reviewed research,
           then email you a one-click link every month to donate 2× the damage to climate charities you choose.
         </p>
@@ -152,7 +152,7 @@ export default function Home() {
           <div className="flex items-center gap-1.5">
             <Logo size={18} />
           </div>
-          <div className="flex items-center gap-6">
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
             <Link href="#about" className="hover:text-white/80 transition-colors">About</Link>
             <Link href="/methodology" className="hover:text-white/80 transition-colors">Methodology</Link>
             <Link href="/how-donations-work" className="hover:text-white/80 transition-colors">Donations</Link>

@@ -58,7 +58,7 @@ export function OnboardingWizard({ charities }: { charities: Charity[] }) {
   }
 
   return (
-    <div className="min-h-screen bg-muted flex items-start justify-center px-4 py-16">
+    <div className="min-h-screen bg-muted flex items-start justify-center px-4 py-8 sm:py-16">
       <div className="w-full max-w-lg">
         {/* Progress */}
         <div className="flex items-center gap-2 mb-8">
@@ -69,7 +69,7 @@ export function OnboardingWizard({ charities }: { charities: Charity[] }) {
                 : i === step ? "bg-primary text-white"
                 : "bg-border text-muted-foreground"
               }`}>{i + 1}</div>
-              <span className={`text-xs ${i === step ? "font-medium" : "text-muted-foreground"}`}>{s}</span>
+              <span className={`hidden sm:inline text-xs ${i === step ? "font-medium" : "text-muted-foreground"}`}>{s}</span>
               {i < STEPS.length - 1 && <div className="flex-1 h-px bg-border" />}
             </div>
           ))}

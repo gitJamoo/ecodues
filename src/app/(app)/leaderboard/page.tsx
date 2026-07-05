@@ -21,8 +21,8 @@ export default async function LeaderboardPage() {
           <Trophy className="w-4 h-4 text-primary" />
           <h2 className="text-sm font-medium">Top donors</h2>
         </div>
-        <div className="rounded-xl border border-border overflow-hidden bg-card">
-          <table className="w-full text-sm">
+        <div className="rounded-xl border border-border overflow-x-auto bg-card">
+          <table className="w-full text-sm min-w-[300px]">
             <thead>
               <tr className="border-b border-border bg-muted/50">
                 <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground w-12">Rank</th>

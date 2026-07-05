@@ -54,7 +54,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
           <p className="text-sm text-muted-foreground mt-0.5">Your AI inference footprint and offset</p>
@@ -112,8 +112,8 @@ export default async function DashboardPage() {
           {periods.length > 0 && (
             <div>
               <h2 className="text-sm font-medium mb-3">By period</h2>
-              <div className="rounded-xl border border-border overflow-hidden bg-card">
-                <table className="w-full text-sm">
+              <div className="rounded-xl border border-border overflow-x-auto bg-card">
+                <table className="w-full text-sm min-w-[340px]">
                   <thead>
                     <tr className="border-b border-border bg-muted/50">
                       <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Month</th>
@@ -145,8 +145,8 @@ export default async function DashboardPage() {
           {ledger.length > 0 ? (
             <div>
               <h2 className="text-sm font-medium mb-3">Payment history</h2>
-              <div className="rounded-xl border border-border overflow-hidden bg-card">
-                <table className="w-full text-sm">
+              <div className="rounded-xl border border-border overflow-x-auto bg-card">
+                <table className="w-full text-sm min-w-[540px]">
                   <thead>
                     <tr className="border-b border-border bg-muted/50">
                       <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Period</th>

@@ -45,8 +45,8 @@ export default async function DonationsPage() {
       )}
 
       {ledger.length > 0 ? (
-        <div className="rounded-xl border border-border overflow-hidden bg-card">
-          <table className="w-full text-sm">
+        <div className="rounded-xl border border-border overflow-x-auto bg-card">
+          <table className="w-full text-sm min-w-[520px]">
             <thead>
               <tr className="border-b border-border bg-muted/50">
                 <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Period</th>
