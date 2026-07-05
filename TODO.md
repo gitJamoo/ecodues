@@ -56,6 +56,21 @@ Handwritten notes. Not prioritized. Just things worth building someday.
 - Mobile app or browser extension for passive tracking
 - Nonprofit 501(c)(3) filing once validated (Form 1023-EZ, ~$275, 2-6 months)
 - Open-source the emissions engine as a standalone npm package
+- Urge users to run ads on Claude Code via the other package then use to forward to donations!
+- Claude Code add-on that lets you easily report your usage and damage in the terminal
+
+## Post-audit suggestions (from 2026-07-05 go-live review)
+
+- Share card ("Spotify Wrapped for AI carbon") — highest-leverage growth feature for a Twitter/HN launch; consider pulling into launch week
+- Claude Code auto-embed — tiny CLI that reads `~/.claude/` usage logs and POSTs token counts; unique wedge, great HN hook
+- Welcome email on signup (Resend is already wired; first email currently arrives a month in)
+- Rate limiting / bot protection on signup + addManualUsage (Vercel BotID or Upstash ratelimit)
+- Opt-in toggle for appearing on the public leaderboard (currently shows display names by default)
+- CSV export of usage/estimates (transparency/trust feature)
+- Vitest suite for the emissions engine (`engine.ts`, `models.ts`, `cycle.ts` are pure functions — easy wins that lock in methodology claims)
+- Sentry (or similar) error monitoring — cron currently only logs to Vercel logs
+- Docs refresh: README is still the create-next-app template; CLAUDE.md says OpenAI/Anthropic connectors are stubs (they're real now) and references a deleted REMINDERS-TODO.md
+- Every.org Partner API + webhook go-live once partners@ replies (webhook route is hardened but disabled until EVERY_ORG_WEBHOOK_TOKEN is set)
 
 BEFORE LAUNCH -- CRITICAL::::
 
@@ -66,6 +81,8 @@ BEFORE LAUNCH -- CRITICAL::::
 - Fix scrolling + mobile issues!!!!!!!
 - Test OFC
 - MAKE SIZZLE REEL
+- OAuth logins!
+- Link up the comparisons to the header
 
 LIST OF PEOPLE TO REACH OUT TO 4 BOOST
 

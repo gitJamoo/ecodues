@@ -36,6 +36,13 @@ yarn-error.log*
 # vercel
 .vercel
 
+# claude code (local state — settings.json is committed)
+.claude/worktrees/
+.claude/settings.local.json
+
+# local notes not meant for the public site
+/public/video_prompt
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
