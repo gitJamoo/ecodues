@@ -2,7 +2,8 @@ import { getDashboardData } from "@/lib/data";
 import { StatCard } from "@/components/stat-card";
 import { Badge } from "@/components/ui/badge";
 import { usd, monthLabel } from "@/lib/format";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Download } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 type LedgerRow = {
   id: string;
@@ -23,9 +24,19 @@ export default async function DonationsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Donations</h1>
-        <p className="text-sm text-muted-foreground mt-0.5">Your monthly offset ledger</p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Donations</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">Your monthly offset ledger</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <a href="/api/export?type=usage" download>
+            <Button variant="outline" size="sm"><Download className="w-3.5 h-3.5 mr-1.5" />Usage CSV</Button>
+          </a>
+          <a href="/api/export?type=ledger" download>
+            <Button variant="outline" size="sm"><Download className="w-3.5 h-3.5 mr-1.5" />Ledger CSV</Button>
+          </a>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
