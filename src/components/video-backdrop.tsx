@@ -41,8 +41,8 @@ export function VideoBackdrop({ src }: { src: string }) {
 
     // rAF loop: LERP current toward target, drive video + overlay from `current`
     const tick = () => {
-      // 0.12 is buttery on 60Hz — smooths the scrub without feeling sluggish
-      current += (target - current) * 0.12;
+      // 0.15 reaches target in ~25 frames on 60 Hz — snappier than 0.12 while still smooth
+      current += (target - current) * 0.15;
       // Snap to target on very small deltas to stop asymptotic drift
       if (Math.abs(target - current) < 0.0005) current = target;
 
@@ -93,7 +93,7 @@ export function VideoBackdrop({ src }: { src: string }) {
       {/* translate3d forces a GPU compositing layer — fixes iOS fixed-position repaint jitter */}
       <div
         className="fixed inset-0 -z-10 pointer-events-none"
-        style={{ transform: "translate3d(0,0,0)", WebkitTransform: "translate3d(0,0,0)" } as React.CSSProperties}
+        style={{ transform: "translate3d(0,0,0)", WebkitTransform: "translate3d(0,0,0)", willChange: "transform" } as React.CSSProperties}
       >
         <video
           ref={videoRef}
@@ -104,14 +104,16 @@ export function VideoBackdrop({ src }: { src: string }) {
           disableRemotePlayback
           className="w-full h-full object-cover"
         />
-        <div ref={overlayRef} className="absolute inset-0 bg-black" style={{ opacity: 0.55 }} />
+        <div ref={overlayRef} className="absolute inset-0 bg-black" style={{ opacity: 0.55, willChange: "opacity" }} />
         <div
           className="absolute inset-0"
           style={{ background: "radial-gradient(ellipse at center, transparent 25%, rgba(0,0,0,0.72) 100%)" }}
         />
       </div>
-      {/* Scroll zone — dvh units respect iOS dynamic address bar */}
-      <div ref={zoneRef} className="h-[200dvh] sm:h-[300dvh]" aria-hidden />
+      {/* Scroll zone — dvh units respect iOS dynamic address bar.
+          100dvh mobile / 150dvh desktop: compact enough that the Steps section
+          appears without long dead-scroll, while still giving the video time to play. */}
+      <div ref={zoneRef} className="h-[100dvh] sm:h-[150dvh]" aria-hidden />
     </>
   );
 }

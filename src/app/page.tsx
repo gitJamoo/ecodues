@@ -19,8 +19,18 @@ export default function Home() {
       <nav className="border-b border-white/10 px-4 sm:px-6 py-4 flex items-center justify-between max-w-6xl mx-auto">
         <Logo size={26} />
         <div className="flex items-center gap-3 sm:gap-6 text-sm text-white/70">
-          <Link href="#about" className="hover:text-white transition-colors hidden sm:block">About</Link>
-          <Link href="/methodology" className="hover:text-white transition-colors hidden sm:block">Methodology</Link>
+          <Link
+            href="#about"
+            className="hover:text-white transition-colors hidden sm:block"
+          >
+            About
+          </Link>
+          <Link
+            href="/methodology"
+            className="hover:text-white transition-colors hidden sm:block"
+          >
+            Methodology
+          </Link>
           <Link href="/login">
             <Button
               variant="outline"
@@ -36,18 +46,22 @@ export default function Home() {
       {/* Hero — video frozen at first frame here */}
       <main className="max-w-3xl mx-auto px-6 pt-24 pb-20 text-center">
         <div className="inline-flex items-center gap-2 rounded-full bg-white/10 border border-white/20 px-3 py-1 text-xs font-medium text-white/80 mb-6">
-          Open source · Powered by Every.org
+          Open source · Powered by PayPal & Every.org
         </div>
         <h1 className="text-3xl sm:text-5xl font-semibold tracking-tight leading-tight mb-6 text-white">
-          Your AI has a footprint.<br />
-          <span className="text-primary">Erase it — twice.</span>
+          Your AI has a footprint.
+          <br />
+          <span className="text-primary">Erase it</span>
         </h1>
         <p className="text-base sm:text-lg text-white/70 mb-10 max-w-xl mx-auto leading-relaxed">
-          Connect your AI provider accounts. We measure your inference emissions using peer-reviewed research,
-          then email you a one-click link every month to donate 2× the damage to climate charities you choose.
+          Connect your AI provider accounts. We measure your inference emissions
+          using peer-reviewed research, then email you a one-click link every
+          month to donate 1-3× the damage to climate charities you choose.
         </p>
         <Link href="/login">
-          <Button size="lg" className="rounded-full px-8">Get started free</Button>
+          <Button size="lg" className="rounded-full px-8">
+            Get started free
+          </Button>
         </Link>
       </main>
 
@@ -63,68 +77,73 @@ export default function Home() {
       {/* Steps — video frozen at last frame here */}
       <section className="max-w-4xl mx-auto px-6 pb-24 grid grid-cols-1 gap-6 sm:grid-cols-3">
         {[
-          { n: "1", title: "Connect", body: "Add your OpenRouter, OpenAI, Anthropic, or Gemini account. Or just pick your subscription tier." },
-          { n: "2", title: "We measure", body: "We compute your monthly CO₂e footprint using published energy-per-token estimates and cite every constant." },
-          { n: "3", title: "You donate 2×", body: "On the 1st of each month, we email you a one-click Every.org link pre-filled at 2× your damage. You click, you pay, you get a tax receipt. We never touch your money." },
+          {
+            n: "1",
+            title: "Connect",
+            body: "Add your OpenRouter, OpenAI, Anthropic, or Gemini account. Or just pick your subscription tier.",
+          },
+          {
+            n: "2",
+            title: "We measure",
+            body: "We compute your monthly CO₂e footprint using published energy-per-token estimates and cite every constant.",
+          },
+          {
+            n: "3",
+            title: "You donate 2×",
+            body: "On the 1st of each month, we email you a one-click Every.org link pre-filled at 2× your damage. You click, you pay, you get a tax receipt. We never touch your money.",
+          },
         ].map(({ n, title, body }) => (
-          <div key={n} className="rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm p-6">
-            <div className="w-8 h-8 rounded-full bg-white/10 text-white text-sm font-semibold flex items-center justify-center mb-4">{n}</div>
+          <div
+            key={n}
+            className="rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm p-6"
+          >
+            <div className="w-8 h-8 rounded-full bg-white/10 text-white text-sm font-semibold flex items-center justify-center mb-4">
+              {n}
+            </div>
             <h3 className="font-semibold mb-2 text-white">{title}</h3>
             <p className="text-sm text-white/60 leading-relaxed">{body}</p>
           </div>
         ))}
       </section>
 
-      {/* Open source banner */}
-      <section className="border-y border-white/10 bg-black/30 backdrop-blur-sm py-12 px-6">
-        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
-          <div className="text-center sm:text-left">
-            <p className="text-xs font-medium text-primary uppercase tracking-widest mb-2">100% Open Source</p>
-            <h2 className="text-2xl font-semibold tracking-tight mb-2 text-white">Built in the open. Always.</h2>
-            <p className="text-sm text-white/60 max-w-md leading-relaxed">
-              Every line of code — the emissions engine, the donation logic, the methodology — is public.
-              Audit it, fork it, improve it. Contributors are always welcome and genuinely appreciated.
-            </p>
-          </div>
-          <a
-            href="https://github.com/gitJamoo/ecodues"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2.5 rounded-full bg-white text-black px-6 py-3 text-sm font-semibold hover:bg-white/90 transition-colors shrink-0"
-          >
-            <GithubIcon className="w-4 h-4" />
-            View on GitHub
-          </a>
-        </div>
-      </section>
-
       {/* About */}
       <section id="about" className="max-w-3xl mx-auto px-6 py-24">
         <div className="text-center mb-12">
-          <p className="text-xs font-medium text-primary uppercase tracking-widest mb-3">The story</p>
-          <h2 className="text-3xl font-semibold tracking-tight text-white">Why EcoDues exists</h2>
+          <p className="text-xs font-medium text-primary uppercase tracking-widest mb-3">
+            The story
+          </p>
+          <h2 className="text-3xl font-semibold tracking-tight text-white">
+            Why EcoDues exists
+          </h2>
         </div>
 
         <div className="max-w-none text-white/70 leading-relaxed space-y-5 text-[15px]">
           <p>
-            I use AI tools every day — for learning, building, and generally trying to get better at what I do.
-            But the more I learned about the environmental cost of large language models, the harder it became
-            to ignore: every prompt has a footprint, and those footprints add up fast across millions of users.
+            I use AI tools every day, for learning, building, and generally
+            trying to get better at what I do. But the more I learned about the
+            environmental cost of large language models, the harder it became to
+            ignore: every prompt has a footprint, and those footprints add up
+            fast.
           </p>
           <p>
-            I didn&apos;t want to stop using AI. The upskilling is real, the productivity gains are real, and
-            the technology is genuinely exciting. What I wanted was a way to use it <em className="text-white/90">responsibly</em> —
-            to keep growing while giving something back to the planet in proportion to what I was taking.
+            I didn&apos;t want to stop using AI. The upside, upskilling, and
+            productivity gains are real. What I wanted was a way to use it{" "}
+            <em className="text-white/90">responsibly</em> - to keep growing
+            while giving something back to the planet in proportion to what I
+            was taking.
           </p>
           <p>
-            The idea behind EcoDues is simple: calculate the actual damage your inference usage causes (in dollars,
-            using the social cost of carbon), then donate twice that amount to the climate charities most likely
-            to make a real difference. You keep the productivity. The planet gets a net positive.
+            The idea behind EcoDues is simple: calculate the actual damage your
+            inference usage causes (in dollars, using the social cost of
+            carbon), then donate twice that amount to the climate charities most
+            likely to make a real difference. You keep the productivity. The
+            planet gets a net positive.
           </p>
           <p>
-            This is a solo project built with a lot of curiosity and the help of AI tools themselves — which
-            felt fitting. It&apos;s not perfect, and the methodology will keep improving as better data becomes
-            available. That&apos;s why it&apos;s open source.
+            This is a solo project built with a lot of curiosity and the help of
+            AI tools themselves - Ironic. It&apos;s not perfect, and the
+            methodology will keep improving as better data becomes available.
+            That&apos;s why it&apos;s open source.
           </p>
         </div>
 
@@ -146,6 +165,34 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Open source banner */}
+      <section className="border-y border-white/10 bg-black/30 backdrop-blur-sm py-12 px-6">
+        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div className="text-center sm:text-left">
+            <p className="text-xs font-medium text-primary uppercase tracking-widest mb-2">
+              100% Open Source
+            </p>
+            <h2 className="text-2xl font-semibold tracking-tight mb-2 text-white">
+              Built in the open. Always.
+            </h2>
+            <p className="text-sm text-white/60 max-w-md leading-relaxed">
+              Every line of code — the emissions engine, the donation logic, the
+              methodology — is public. Audit it, fork it, improve it.
+              Contributors are always welcome and genuinely appreciated.
+            </p>
+          </div>
+          <a
+            href="https://github.com/gitJamoo/ecodues"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2.5 rounded-full bg-white text-black px-6 py-3 text-sm font-semibold hover:bg-white/90 transition-colors shrink-0"
+          >
+            <GithubIcon className="w-4 h-4" />
+            View on GitHub
+          </a>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="border-t border-white/10 bg-black/40 backdrop-blur-sm py-8 px-6">
         <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/50">
@@ -153,9 +200,24 @@ export default function Home() {
             <Logo size={18} />
           </div>
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
-            <Link href="#about" className="hover:text-white/80 transition-colors">About</Link>
-            <Link href="/methodology" className="hover:text-white/80 transition-colors">Methodology</Link>
-            <Link href="/how-donations-work" className="hover:text-white/80 transition-colors">Donations</Link>
+            <Link
+              href="#about"
+              className="hover:text-white/80 transition-colors"
+            >
+              About
+            </Link>
+            <Link
+              href="/methodology"
+              className="hover:text-white/80 transition-colors"
+            >
+              Methodology
+            </Link>
+            <Link
+              href="/how-donations-work"
+              className="hover:text-white/80 transition-colors"
+            >
+              Donations
+            </Link>
             <a
               href="https://github.com/gitJamoo/ecodues"
               target="_blank"
@@ -165,7 +227,17 @@ export default function Home() {
               <GithubIcon className="w-3 h-3" /> GitHub
             </a>
           </div>
-          <p>Made with care by <a href="https://j-m-s.dev/" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-white/80">James Smith</a></p>
+          <p>
+            Made with care by{" "}
+            <a
+              href="https://j-m-s.dev/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline underline-offset-2 hover:text-white/80"
+            >
+              James Smith
+            </a>
+          </p>
         </div>
       </footer>
     </div>
