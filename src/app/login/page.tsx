@@ -75,6 +75,9 @@ export default function LoginPage() {
     if (msg.includes("too many requests") || msg.includes("rate limit")) {
       return "Too many attempts — please wait a moment and try again.";
     }
+    if (msg.includes("confirmation email") || msg.includes("sending email")) {
+      return "We couldn't send your confirmation email — please try again shortly.";
+    }
     if (msg.includes("password")) {
       return "Password requirements not met.";
     }
