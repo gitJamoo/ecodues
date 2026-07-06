@@ -26,7 +26,7 @@ interface ShareImpactProps {
 export function ShareImpact(props: ShareImpactProps) {
   const { periodLabel, kgCo2e, kwh, damageUsd, donationUsd, multiplier, displayName } = props;
 
-  const { relativeUrl, absoluteUrl, tweetUrl } = useMemo(() => {
+  const { relativeUrl, shareUrl, tweetUrl } = useMemo(() => {
     const params = new URLSearchParams({
       period: periodLabel,
       kg: kgCo2e.toFixed(3),
@@ -38,16 +38,18 @@ export function ShareImpact(props: ShareImpactProps) {
     if (displayName?.trim()) params.set("name", displayName.trim());
     const relativeUrl = `/api/share-card?${params.toString()}`;
     const base = process.env.NEXT_PUBLIC_SITE_URL ?? "https://ecodues.app";
-    const absoluteUrl = `${base}${relativeUrl}`;
+    // X and LinkedIn can't attach a raw image URL — they render the card
+    // from the og/twitter metadata of an HTML page, so share /share.
+    const shareUrl = `${base}/share?${params.toString()}`;
     const text = `My AI usage caused ${kgCo2e.toFixed(2)} kg of CO₂e (${periodLabel}) — and I'm offsetting it. Track yours at ecodues.app`;
-    const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(absoluteUrl)}`;
-    return { relativeUrl, absoluteUrl, tweetUrl };
+    const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`;
+    return { relativeUrl, shareUrl, tweetUrl };
   }, [periodLabel, kgCo2e, kwh, damageUsd, donationUsd, multiplier, displayName]);
 
   async function copyLink() {
     try {
-      await navigator.clipboard.writeText(absoluteUrl);
-      toast.success("Image link copied");
+      await navigator.clipboard.writeText(shareUrl);
+      toast.success("Share link copied");
     } catch {
       toast.error("Couldn't copy — your browser blocked clipboard access");
     }
@@ -83,7 +85,7 @@ export function ShareImpact(props: ShareImpactProps) {
           <a href={relativeUrl} download={`ecodues-${periodLabel.replace(/\s+/g, "-").toLowerCase()}.png`}>
             <Button variant="outline" size="sm">Download image</Button>
           </a>
-          <Button variant="outline" size="sm" onClick={copyLink}>Copy image link</Button>
+          <Button variant="outline" size="sm" onClick={copyLink}>Copy share link</Button>
         </div>
       </DialogContent>
     </Dialog>
