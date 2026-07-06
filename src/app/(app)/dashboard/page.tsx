@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { classifyModel } from "@/lib/emissions/models";
 import { estimateFromTokens, estimateFromSpend, donationForDamage } from "@/lib/emissions/engine";
 import { TabBanner } from "@/components/tab-banner";
+import { ShareImpact } from "@/components/share-impact";
+import { computeBadges, computeStreak } from "@/lib/badges";
 
 type UsageRow    = { id: string; period: string; provider: string; model: string; input_tokens: number; output_tokens: number; spend_usd: number; source: string };
 type EstimateRow = { period: string; kwh: number; kg_co2e: number; damage_usd: number };
@@ -52,6 +54,17 @@ export default async function DashboardPage() {
   const totalDonated = (ledger as LedgerRow[]).reduce((s, l) => s + Number(l.donation_usd), 0);
   const periods = [...new Set((estimates as EstimateRow[]).map(e => e.period))].sort();
 
+  const anyPaid = (ledger as LedgerRow[]).some(l => l.status === "paid" || l.status === "partially_paid");
+  const streak = computeStreak(periods);
+  const badges = computeBadges({ periods, totalKgCo2e: histKgCo2e, anyPaid, multiplier });
+
+  // Share card: current cycle if it has usage, otherwise all-time totals.
+  const hasCycleData = cycle.kgCo2e > 0;
+  const share = hasCycleData
+    ? { label: now.toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" }), kg: cycle.kgCo2e, kwh: cycle.kwh, damage: cycle.damageUsd, donation: nextDonation }
+    : { label: "All time", kg: histKgCo2e, kwh: histKwh, damage: histDamage, donation: totalDonated };
+  const showShare = share.kg > 0;
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -60,6 +73,17 @@ export default async function DashboardPage() {
           <p className="text-sm text-muted-foreground mt-0.5">Your AI inference footprint and offset</p>
         </div>
         <div className="flex items-center gap-2">
+          {showShare && (
+            <ShareImpact
+              periodLabel={share.label}
+              kgCo2e={share.kg}
+              kwh={share.kwh}
+              damageUsd={share.damage}
+              donationUsd={share.donation}
+              multiplier={multiplier}
+              displayName={(profile as { display_name?: string | null }).display_name}
+            />
+          )}
           <Link href="/settings">
             <Button variant="outline" size="sm">Edit settings</Button>
           </Link>
@@ -106,6 +130,27 @@ export default async function DashboardPage() {
             <StatCard label="All-time energy" value={energy(histKwh)}    sub="committed cycles" />
             <StatCard label="Total damage"    value={usd(histDamage)}    sub="social cost of carbon" />
             <StatCard label="Total donated"   value={usd(totalDonated)}  sub="via Every.org" accent />
+          </div>
+
+          {/* Streak + badges */}
+          <div>
+            <h2 className="text-sm font-medium mb-3">
+              Badges{streak > 1 && <span className="ml-2 text-xs font-normal text-muted-foreground">🔥 {streak}-month streak</span>}
+            </h2>
+            <div className="flex flex-wrap gap-2">
+              {badges.map((b) => (
+                <div
+                  key={b.id}
+                  title={b.description}
+                  className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium
+                    ${b.earned
+                      ? "border-primary/30 bg-primary/10 text-primary"
+                      : "border-border bg-muted/40 text-muted-foreground/60"}`}
+                >
+                  {b.earned ? "✓" : "○"} {b.label}
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Period breakdown */}
