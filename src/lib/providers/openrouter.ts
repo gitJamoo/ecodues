@@ -1,4 +1,4 @@
-import type { MonthlyUsage, Period, ProviderConnector } from "./types";
+import type { MonthlyUsage, ProviderConnector } from "./types";
 
 interface ActivityRow {
   date: string;

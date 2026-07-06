@@ -47,7 +47,7 @@ export default function MethodologyPage() {
               <tbody className="divide-y divide-border">
                 <tr><td className="px-4 py-3">PUE (data center overhead)</td><td className="px-4 py-3 text-right tabular-nums">{PUE}</td><td className="px-4 py-3 text-muted-foreground text-xs">Uptime Institute Global Survey 2023</td></tr>
                 <tr><td className="px-4 py-3">Grid intensity</td><td className="px-4 py-3 text-right tabular-nums">{GRID_KG_CO2E_PER_KWH} kg CO₂e/kWh</td><td className="px-4 py-3 text-muted-foreground text-xs">US EPA eGRID national average 2022</td></tr>
-                <tr><td className="px-4 py-3">Water intensity</td><td className="px-4 py-3 text-right tabular-nums">{WATER_L_PER_KWH} L/kWh</td><td className="px-4 py-3 text-muted-foreground text-xs">Li et al. 2023, "Making AI Less Thirsty"</td></tr>
+                <tr><td className="px-4 py-3">Water intensity</td><td className="px-4 py-3 text-right tabular-nums">{WATER_L_PER_KWH} L/kWh</td><td className="px-4 py-3 text-muted-foreground text-xs">Li et al. 2023, &ldquo;Making AI Less Thirsty&rdquo;</td></tr>
                 <tr><td className="px-4 py-3">Social cost of carbon</td><td className="px-4 py-3 text-right tabular-nums">${SOCIAL_COST_USD_PER_TON_CO2E}/t CO₂e</td><td className="px-4 py-3 text-muted-foreground text-xs">US EPA 2023 SC-GHG report, central estimate</td></tr>
                 <tr><td className="px-4 py-3">Input token energy fraction</td><td className="px-4 py-3 text-right tabular-nums">{INPUT_TOKEN_ENERGY_FRACTION}×</td><td className="px-4 py-3 text-muted-foreground text-xs">Prefill ≪ decode; Luccioni et al. 2024</td></tr>
               </tbody>
