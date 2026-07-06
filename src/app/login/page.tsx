@@ -30,6 +30,15 @@ function GoogleIcon() {
   );
 }
 
+function Divider() {
+  return (
+    <div className="relative my-3">
+      <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border" /></div>
+      <div className="relative text-center text-xs text-muted-foreground bg-white px-2 mx-auto w-fit">or</div>
+    </div>
+  );
+}
+
 export default function LoginPage() {
   const router = useRouter();
   // Lazy init: env vars are inlined at build time, but the module can be
@@ -88,13 +97,6 @@ export default function LoginPage() {
     // on success the browser is redirected — no need to clear loading
   }
 
-  const Divider = () => (
-    <div className="relative my-3">
-      <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border" /></div>
-      <div className="relative text-center text-xs text-muted-foreground bg-white px-2 mx-auto w-fit">or</div>
-    </div>
-  );
-
   return (
     <div className="min-h-screen bg-muted flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
@@ -115,14 +117,15 @@ export default function LoginPage() {
               <GithubIcon />
               {oauthLoading === "github" ? "Redirecting…" : "Continue with GitHub"}
             </Button>
+            {/* Google OAuth not configured yet — re-enable once the Google Cloud OAuth app is registered */}
             <Button
               variant="outline"
-              className="w-full"
-              onClick={() => signInWithOAuth("google")}
-              disabled={oauthLoading !== null}
+              className="w-full opacity-50 cursor-not-allowed grayscale"
+              disabled
+              title="Google sign-in is coming soon"
             >
               <GoogleIcon />
-              {oauthLoading === "google" ? "Redirecting…" : "Continue with Google"}
+              Google sign-in coming soon
             </Button>
           </div>
 
