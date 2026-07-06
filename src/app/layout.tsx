@@ -10,10 +10,10 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://ecodues.app";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: "EcoDues — Make your AI use net-positive",
+  title: "EcoDues | Make your AI use net-positive",
   description: "Connect your AI providers, see your inference footprint, and automatically donate to offset it — twice.",
   openGraph: {
-    title: "EcoDues — Make your AI use net-positive",
+    title: "EcoDues | Make your AI use net-positive",
     description: "Connect your AI providers, see your inference footprint, and automatically donate to offset it — twice.",
     url: "/",
     siteName: "EcoDues",
@@ -21,13 +21,12 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "EcoDues — Make your AI use net-positive",
+    title: "EcoDues | Make your AI use net-positive",
     description: "Connect your AI providers, see your inference footprint, and automatically donate to offset it — twice.",
   },
-  icons: {
-    icon: "/logo.svg",
-    apple: "/logo.svg",
-  },
+  // Icons come from the app/ file conventions (icon.svg, icon.png,
+  // apple-icon.png) — declaring them here too made browsers pick between
+  // duplicate <link rel="icon"> tags.
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

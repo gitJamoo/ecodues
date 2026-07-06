@@ -1,6 +1,7 @@
 import { ImageResponse } from "next/og";
+import { LOGO_DATA_URI } from "@/lib/brand";
 
-export const alt = "EcoDues — Make your AI use net-positive";
+export const alt = "EcoDues | Make your AI use net-positive";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -20,7 +21,8 @@ export default function OpengraphImage() {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-          <div style={{ display: "flex", width: 18, height: 18, borderRadius: 9, background: "#5fd07f" }} />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={LOGO_DATA_URI} width={40} height={40} alt="" style={{ borderRadius: 9 }} />
           <div style={{ display: "flex", fontSize: 34, fontWeight: 700, color: "#f2f7f2", letterSpacing: -1 }}>EcoDues</div>
         </div>
 

@@ -1,5 +1,6 @@
 import { ImageResponse } from "next/og";
 import type { NextRequest } from "next/server";
+import { LOGO_DATA_URI } from "@/lib/brand";
 
 export const runtime = "edge";
 
@@ -47,7 +48,8 @@ export async function GET(req: NextRequest) {
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-            <div style={{ display: "flex", width: 18, height: 18, borderRadius: 9, background: "#5fd07f" }} />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={LOGO_DATA_URI} width={36} height={36} alt="" style={{ borderRadius: 8 }} />
             <div style={{ display: "flex", fontSize: 34, fontWeight: 700, color: "#f2f7f2", letterSpacing: -1 }}>EcoDues</div>
           </div>
           <div style={{ display: "flex", fontSize: 26, color: "#9fbf9f" }}>{period}</div>
