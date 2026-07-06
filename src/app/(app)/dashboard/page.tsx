@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
-import { getDashboardData } from "@/lib/data";
+import { getDashboardData, getConnections } from "@/lib/data";
+import { tierById } from "@/lib/emissions/tiers";
 import { StatCard } from "@/components/stat-card";
 import { RunCycleButton } from "@/components/run-cycle-button";
 import { UsageTable } from "@/components/usage-table";
@@ -13,6 +14,8 @@ import { estimateFromTokens, estimateFromSpend, donationForDamage } from "@/lib/
 import { TabBanner } from "@/components/tab-banner";
 import { ShareImpact } from "@/components/share-impact";
 import { computeBadges, computeStreak } from "@/lib/badges";
+import { SubscriptionPlans, type TierConnection } from "@/components/subscription-plans";
+import { DonationMath } from "@/components/donation-math";
 
 type UsageRow    = { id: string; period: string; provider: string; model: string; input_tokens: number; output_tokens: number; spend_usd: number; source: string };
 type EstimateRow = { period: string; kwh: number; kg_co2e: number; damage_usd: number };
@@ -43,8 +46,27 @@ export default async function DashboardPage() {
   const currentPeriodPrefix = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}`;
   const currentUsage = (usage as UsageRow[]).filter(u => u.period.startsWith(currentPeriodPrefix));
 
-  // Live stats for this cycle
-  const cycle = liveStatsFrom(currentUsage);
+  // Subscription tiers only materialize usage rows when the monthly cycle
+  // runs (for the PREVIOUS period), so project them live for this cycle.
+  const connections = await getConnections();
+  const tierConns = connections.filter((c: { kind: string; tier_id?: string | null }) => c.kind === "tier" && c.tier_id);
+  const tierStats = tierConns.reduce((acc: { kwh: number; kgCo2e: number; damageUsd: number }, c: { tier_id?: string | null }) => {
+    const tid = String(c.tier_id);
+    const t = tierById(tid);
+    if (!t) return acc;
+    const pctStr = tid.split(":")[1];
+    const pct = pctStr ? Math.min(1, Math.max(0, Number(pctStr) / 100)) : 1;
+    const est = estimateFromTokens(t.modelClass, t.monthlyInputTokens * pct, t.monthlyOutputTokens * pct);
+    return { kwh: acc.kwh + est.kwh, kgCo2e: acc.kgCo2e + est.kgCo2e, damageUsd: acc.damageUsd + est.damageUsd };
+  }, { kwh: 0, kgCo2e: 0, damageUsd: 0 });
+
+  // Live stats for this cycle = logged usage + projected subscription usage
+  const usageStats = liveStatsFrom(currentUsage);
+  const cycle = {
+    kwh: usageStats.kwh + tierStats.kwh,
+    kgCo2e: usageStats.kgCo2e + tierStats.kgCo2e,
+    damageUsd: usageStats.damageUsd + tierStats.damageUsd,
+  };
   const nextDonation = donationForDamage(cycle.damageUsd, multiplier);
 
   // History: aggregate from committed emission_estimates
@@ -107,6 +129,19 @@ export default async function DashboardPage() {
             <StatCard label="Damage"    value={usd(cycle.damageUsd)} sub="social cost of carbon" />
             <StatCard label="Next donation" value={usd(nextDonation)} sub={charityName} accent />
           </div>
+
+          <div className="flex justify-end -mt-3">
+            <DonationMath
+              kwh={cycle.kwh}
+              kgCo2e={cycle.kgCo2e}
+              damageUsd={cycle.damageUsd}
+              multiplier={multiplier}
+              donationUsd={nextDonation}
+              charityName={charityName}
+            />
+          </div>
+
+          <SubscriptionPlans connections={tierConns as TierConnection[]} />
 
           {currentUsage.length > 0 ? (
             <div>

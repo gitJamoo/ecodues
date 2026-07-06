@@ -34,7 +34,15 @@ const CATEGORY_LABELS: Record<ProviderCategory, string> = {
 
 const CATEGORY_ORDER: ProviderCategory[] = ["coding", "search", "social", "inference", "cloud"];
 
-export function ProviderConnect({ connections }: { connections: Connection[] }) {
+export function ProviderConnect({ connections, periodMode = "current" }: {
+  connections: Connection[];
+  /**
+   * Which month manual/paste usage is logged to. Onboarding asks about LAST
+   * month (so completeOnboarding's immediate cycle picks it up); the providers
+   * page logs THIS month (so it shows live on the dashboard's "This cycle").
+   */
+  periodMode?: "current" | "previous";
+}) {
   const [loading, setLoading] = useState<string | null>(null);
   const [keys, setKeys] = useState<Record<string, string>>({});
   const [tiers, setTiers] = useState<Record<string, string>>({});
@@ -59,7 +67,10 @@ export function ProviderConnect({ connections }: { connections: Connection[] }) 
   const [customName, setCustomName] = useState("");
 
   const connFor = (pid: string) => connections.find(c => c.provider === pid);
-  const period = periodDateString(previousPeriod(new Date()));
+  const now = new Date();
+  const period = periodMode === "previous"
+    ? periodDateString(previousPeriod(now))
+    : periodDateString({ year: now.getUTCFullYear(), month: now.getUTCMonth() + 1 });
 
   function markSaved(pid: string) {
     setSavedProviders(prev => new Set([...prev, pid]));
