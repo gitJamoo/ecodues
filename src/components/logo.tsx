@@ -26,7 +26,8 @@ export function Logo({ iconOnly = false, size = 28, className }: LogoProps) {
             <stop offset="1" stopColor="#33C35D" />
           </linearGradient>
         </defs>
-        <rect x="32" y="32" width="448" height="448" rx="96" fill="#081B17" />
+        {/* Full-bleed tile — keep in sync with src/app/icon.svg and src/lib/brand.ts */}
+        <rect x="0" y="0" width="512" height="512" rx="110" fill="#081B17" />
         <path
           d="M135 170 C170 125 245 120 340 128 C322 178 270 215 205 215 H135 Z"
           fill="url(#ed-leaf)"

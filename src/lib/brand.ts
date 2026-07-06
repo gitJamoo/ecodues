@@ -13,4 +13,7 @@ export const LOGO_SVG = `<svg width="512" height="512" viewBox="0 0 512 512" fil
 <path d="M135 297 C170 252 245 247 340 255 C322 305 270 342 205 342 H135 Z" fill="url(#leafGradient)"/>
 </svg>`;
 
-export const LOGO_DATA_URI = `data:image/svg+xml,${encodeURIComponent(LOGO_SVG)}`;
+// base64 rather than URL-encoded: satori's <img> handling is only reliable
+// with base64 data URIs. btoa exists in both the edge and Node runtimes and
+// is safe here because LOGO_SVG is pure ASCII.
+export const LOGO_DATA_URI = `data:image/svg+xml;base64,${btoa(LOGO_SVG)}`;
