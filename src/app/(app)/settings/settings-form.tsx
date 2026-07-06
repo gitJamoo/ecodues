@@ -22,6 +22,7 @@ interface Profile {
   multiplier: number;
   charity_id: string | null;
   email_opt_out: boolean | null;
+  leaderboard_opt_in?: boolean | null;
 }
 interface Charity { id: string; name: string; description: string; category: string; url?: string; min_donation_usd?: number }
 
@@ -35,6 +36,7 @@ export function SettingsForm({ profile, charities, totalDamageUsd, tabUsd }: {
   const [multiplier, setMultiplier] = useState(Number(profile?.multiplier ?? 2));
   const [charityId, setCharityId] = useState<string | null>(profile?.charity_id ?? null);
   const [emailOptOut, setEmailOptOut] = useState(profile?.email_opt_out ?? false);
+  const [leaderboardOptIn, setLeaderboardOptIn] = useState(profile?.leaderboard_opt_in ?? false);
   const [saving, setSaving] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -42,7 +44,7 @@ export function SettingsForm({ profile, charities, totalDamageUsd, tabUsd }: {
 
   async function handleSave() {
     setSaving(true);
-    await saveSettings({ displayName: name, multiplier, charityId: charityId ?? undefined, emailOptOut });
+    await saveSettings({ displayName: name, multiplier, charityId: charityId ?? undefined, emailOptOut, leaderboardOptIn });
     setSaving(false);
     toast.success("Settings saved");
   }
@@ -129,6 +131,24 @@ export function SettingsForm({ profile, charities, totalDamageUsd, tabUsd }: {
           className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${!emailOptOut ? "bg-primary" : "bg-muted-foreground/30"}`}
         >
           <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow-sm transition-transform ${!emailOptOut ? "translate-x-[18px]" : "translate-x-[3px]"}`} />
+        </button>
+      </div>
+
+      <Separator />
+
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <Label className="mb-0.5 block">Appear on the leaderboard</Label>
+          <p className="text-sm text-muted-foreground">Show your display name and donation totals on the public community page</p>
+        </div>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={leaderboardOptIn}
+          onClick={() => setLeaderboardOptIn(!leaderboardOptIn)}
+          className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${leaderboardOptIn ? "bg-primary" : "bg-muted-foreground/30"}`}
+        >
+          <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow-sm transition-transform ${leaderboardOptIn ? "translate-x-[18px]" : "translate-x-[3px]"}`} />
         </button>
       </div>
 

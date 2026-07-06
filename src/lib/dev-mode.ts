@@ -21,6 +21,7 @@ export const DEV_PROFILE = {
   last_reminder_period: "2026-06-01",
   donation_provider: "every_org" as const,
   email_opt_out: false,
+  leaderboard_opt_in: true,
 };
 
 export const DEV_ESTIMATES = [
