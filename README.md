@@ -1,36 +1,40 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# EcoDues
 
-## Getting Started
+**Offset the climate damage of your AI usage.** EcoDues tallies your monthly AI usage across providers, estimates the energy, CO₂e, and social cost it caused using a [published methodology](https://ecodues.app/methodology), and nudges you to donate the offset (at a multiplier you choose) to vetted climate charities — via PayPal Giving Fund or Every.org. EcoDues never touches your money.
 
-First, run the development server:
+Live at **[ecodues.app](https://ecodues.app)**.
+
+## How it works
+
+1. **Connect** — link AI providers with an API key (OpenRouter, OpenAI, Anthropic admin keys), pick your subscription tier (ChatGPT Plus, Claude Pro, Copilot, Cursor, …), or log usage manually.
+2. **We measure** — on the 1st of each month a cycle runs: usage → kWh → kg CO₂e → damage in USD (social cost of carbon).
+3. **You donate** — damage × your multiplier accrues to your tab. When it crosses your charity's minimum, you get a one-click donation link. 100% goes to the charity via PayPal Giving Fund where available.
+
+## Development
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+cp .env.example .env.local   # fill in Supabase keys etc.
+npm run dev                  # localhost:3000
+npm test                     # vitest suite (emissions engine)
+npm run build                # production build
+npx tsc --noEmit             # type check
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Set `DEV_MODE=true` in `.env.local` to bypass auth entirely and work with stub data (see `src/lib/dev-mode.ts`). Never set it in production.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Stack
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Next.js 16 (App Router) · Supabase (Postgres + Auth) · Tailwind v4 · Resend (email) · Vercel (hosting + crons)
 
-## Learn More
+Architecture notes live in [CLAUDE.md](./CLAUDE.md). Database migrations are in `supabase/migrations/`.
 
-To learn more about Next.js, take a look at the following resources:
+## Transparency
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- The full emissions methodology, with cited constants, is at [/methodology](https://ecodues.app/methodology).
+- Every user can export all of their data as CSV from the app.
+- The emissions engine is pure TypeScript (`src/lib/emissions/`) with a test suite locking in the math.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Contributing
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Issues and PRs welcome — especially new provider connectors (see `src/lib/providers/openrouter.ts` for the pattern) and methodology improvements with citations.
