@@ -2,7 +2,14 @@
 
 import { useEffect, useRef } from "react";
 
-export function VideoBackdrop({ src }: { src: string }) {
+export function VideoBackdrop({
+  src,
+  scrollLength = "h-[50dvh] sm:h-[75dvh]",
+}: {
+  src: string;
+  /** Tailwind height class(es) for the scroll-scrub zone. Defaults to 50dvh mobile / 75dvh desktop. */
+  scrollLength?: string;
+}) {
   const videoRef   = useRef<HTMLVideoElement>(null);
   const zoneRef    = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
@@ -111,9 +118,10 @@ export function VideoBackdrop({ src }: { src: string }) {
         />
       </div>
       {/* Scroll zone — dvh units respect iOS dynamic address bar.
-          100dvh mobile / 150dvh desktop: compact enough that the Steps section
-          appears without long dead-scroll, while still giving the video time to play. */}
-      <div ref={zoneRef} className="h-[100dvh] sm:h-[150dvh]" aria-hidden />
+          Defaults to 50dvh mobile / 75dvh desktop so the Steps section is
+          reached quickly while still giving the video time to play.
+          Override via the scrollLength prop if a longer scrub zone is needed. */}
+      <div ref={zoneRef} className={scrollLength} aria-hidden />
     </>
   );
 }

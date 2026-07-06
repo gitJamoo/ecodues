@@ -1,6 +1,4 @@
 import { MODEL_CLASS_PROFILES, PUE, GRID_KG_CO2E_PER_KWH, WATER_L_PER_KWH, SOCIAL_COST_USD_PER_TON_CO2E, INPUT_TOKEN_ENERGY_FRACTION, METHODOLOGY_VERSION } from "@/lib/emissions/constants";
-import Link from "next/link";
-import { Logo } from "@/components/logo";
 
 export const metadata = {
   title: "Methodology · EcoDues",
@@ -10,18 +8,13 @@ export const metadata = {
 
 export default function MethodologyPage() {
   return (
-    <div className="min-h-screen bg-white">
-      <nav className="border-b border-border px-6 py-4 flex items-center justify-between max-w-4xl mx-auto">
-        <Link href="/"><Logo size={24} /></Link>
-        <Link href="/login" className="text-sm text-muted-foreground hover:text-foreground">Sign in →</Link>
-      </nav>
-
+    <div className="min-h-screen bg-background">
       <main className="max-w-3xl mx-auto px-6 py-16 space-y-10">
         <div>
           <div className="inline-flex items-center gap-2 rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground mb-4">
             Version {METHODOLOGY_VERSION}
           </div>
-          <h1 className="text-4xl font-semibold tracking-tight mb-3">Methodology</h1>
+          <h1 className="text-4xl font-semibold tracking-tight mb-3 text-foreground">Methodology</h1>
           <p className="text-muted-foreground leading-relaxed">
             How we estimate the environmental cost of AI inference, and how we translate it into a donation amount.
             Every constant is cited; every formula is auditable.
@@ -29,8 +22,8 @@ export default function MethodologyPage() {
         </div>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold">The formula</h2>
-          <div className="bg-muted rounded-xl p-5 font-mono text-sm space-y-1.5 leading-relaxed">
+          <h2 className="text-xl font-semibold text-foreground">The formula</h2>
+          <div className="bg-muted rounded-xl p-5 font-mono text-sm space-y-1.5 leading-relaxed text-foreground">
             <p>kWh = (output_tokens + input_tokens × {INPUT_TOKEN_ENERGY_FRACTION}) × Wh/token × PUE / 1000</p>
             <p>kg CO₂e = kWh × grid_intensity</p>
             <p>liters H₂O = kWh × water_intensity</p>
@@ -40,7 +33,7 @@ export default function MethodologyPage() {
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold">Constants</h2>
+          <h2 className="text-xl font-semibold text-foreground">Constants</h2>
           <div className="rounded-xl border border-border overflow-hidden">
             <table className="w-full text-sm">
               <thead>
@@ -51,18 +44,38 @@ export default function MethodologyPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                <tr><td className="px-4 py-3">PUE (data center overhead)</td><td className="px-4 py-3 text-right tabular-nums">{PUE}</td><td className="px-4 py-3 text-muted-foreground text-xs">Uptime Institute Global Survey 2023</td></tr>
-                <tr><td className="px-4 py-3">Grid intensity</td><td className="px-4 py-3 text-right tabular-nums">{GRID_KG_CO2E_PER_KWH} kg CO₂e/kWh</td><td className="px-4 py-3 text-muted-foreground text-xs">US EPA eGRID national average 2022</td></tr>
-                <tr><td className="px-4 py-3">Water intensity</td><td className="px-4 py-3 text-right tabular-nums">{WATER_L_PER_KWH} L/kWh</td><td className="px-4 py-3 text-muted-foreground text-xs">Li et al. 2023, &ldquo;Making AI Less Thirsty&rdquo;</td></tr>
-                <tr><td className="px-4 py-3">Social cost of carbon</td><td className="px-4 py-3 text-right tabular-nums">${SOCIAL_COST_USD_PER_TON_CO2E}/t CO₂e</td><td className="px-4 py-3 text-muted-foreground text-xs">US EPA 2023 SC-GHG report, central estimate</td></tr>
-                <tr><td className="px-4 py-3">Input token energy fraction</td><td className="px-4 py-3 text-right tabular-nums">{INPUT_TOKEN_ENERGY_FRACTION}×</td><td className="px-4 py-3 text-muted-foreground text-xs">Prefill ≪ decode; Luccioni et al. 2024</td></tr>
+                <tr className="bg-background">
+                  <td className="px-4 py-3 text-foreground">PUE (data center overhead)</td>
+                  <td className="px-4 py-3 text-right tabular-nums text-foreground">{PUE}</td>
+                  <td className="px-4 py-3 text-muted-foreground text-xs">Uptime Institute Global Survey 2023</td>
+                </tr>
+                <tr className="bg-background">
+                  <td className="px-4 py-3 text-foreground">Grid intensity</td>
+                  <td className="px-4 py-3 text-right tabular-nums text-foreground">{GRID_KG_CO2E_PER_KWH} kg CO₂e/kWh</td>
+                  <td className="px-4 py-3 text-muted-foreground text-xs">US EPA eGRID national average 2022</td>
+                </tr>
+                <tr className="bg-background">
+                  <td className="px-4 py-3 text-foreground">Water intensity</td>
+                  <td className="px-4 py-3 text-right tabular-nums text-foreground">{WATER_L_PER_KWH} L/kWh</td>
+                  <td className="px-4 py-3 text-muted-foreground text-xs">Li et al. 2023, &ldquo;Making AI Less Thirsty&rdquo;</td>
+                </tr>
+                <tr className="bg-background">
+                  <td className="px-4 py-3 text-foreground">Social cost of carbon</td>
+                  <td className="px-4 py-3 text-right tabular-nums text-foreground">${SOCIAL_COST_USD_PER_TON_CO2E}/t CO₂e</td>
+                  <td className="px-4 py-3 text-muted-foreground text-xs">US EPA 2023 SC-GHG report, central estimate</td>
+                </tr>
+                <tr className="bg-background">
+                  <td className="px-4 py-3 text-foreground">Input token energy fraction</td>
+                  <td className="px-4 py-3 text-right tabular-nums text-foreground">{INPUT_TOKEN_ENERGY_FRACTION}×</td>
+                  <td className="px-4 py-3 text-muted-foreground text-xs">Prefill ≪ decode; Luccioni et al. 2024</td>
+                </tr>
               </tbody>
             </table>
           </div>
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold">Energy per token by model class</h2>
+          <h2 className="text-xl font-semibold text-foreground">Energy per token by model class</h2>
           <div className="rounded-xl border border-border overflow-hidden">
             <table className="w-full text-sm">
               <thead>
@@ -74,10 +87,10 @@ export default function MethodologyPage() {
               </thead>
               <tbody className="divide-y divide-border">
                 {(Object.entries(MODEL_CLASS_PROFILES) as [string, { whPerOutputToken: number; blendedUsdPerMTok: number }][]).map(([cls, p]) => (
-                  <tr key={cls}>
-                    <td className="px-4 py-3 capitalize">{cls}</td>
-                    <td className="px-4 py-3 text-right tabular-nums font-mono text-xs">{p.whPerOutputToken}</td>
-                    <td className="px-4 py-3 text-right tabular-nums font-mono text-xs">${p.blendedUsdPerMTok}</td>
+                  <tr key={cls} className="bg-background">
+                    <td className="px-4 py-3 capitalize text-foreground">{cls}</td>
+                    <td className="px-4 py-3 text-right tabular-nums font-mono text-xs text-foreground">{p.whPerOutputToken}</td>
+                    <td className="px-4 py-3 text-right tabular-nums font-mono text-xs text-foreground">${p.blendedUsdPerMTok}</td>
                   </tr>
                 ))}
               </tbody>
@@ -86,7 +99,7 @@ export default function MethodologyPage() {
         </section>
 
         <section className="space-y-3">
-          <h2 className="text-xl font-semibold">Limitations</h2>
+          <h2 className="text-xl font-semibold text-foreground">Limitations</h2>
           <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1.5 leading-relaxed">
             <li>These are estimates, not measurements. Actual energy use varies by data center location, cooling method, utilization, and hardware generation.</li>
             <li>We use a US-average grid intensity. Many large providers use significant renewable energy, which would reduce real-world emissions.</li>
@@ -97,7 +110,7 @@ export default function MethodologyPage() {
         </section>
 
         <section className="space-y-3">
-          <h2 className="text-xl font-semibold">Citations</h2>
+          <h2 className="text-xl font-semibold text-foreground">Citations</h2>
           <ol className="list-decimal list-inside text-sm text-muted-foreground space-y-2 leading-relaxed">
             <li>Luccioni, A., Jernite, Y., &amp; Strubell, E. (2024). <em>Power Hungry Processing: Watts Driving the Cost of AI Deployment?</em> ACM FAccT 2024.</li>
             <li>Epoch AI (2025). <em>How much energy does ChatGPT use?</em></li>

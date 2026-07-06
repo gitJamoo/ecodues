@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Logo } from "@/components/logo";
 import { ExternalLink } from "lucide-react";
 import { VideoBackdrop } from "@/components/video-backdrop";
 
@@ -14,40 +13,9 @@ function GithubIcon({ className }: { className?: string }) {
 
 export default function Home() {
   return (
-    <div className="min-h-screen text-white overflow-x-hidden">
-      {/* Nav */}
-      <nav className="border-b border-white/10 px-4 sm:px-6 py-4 flex items-center justify-between max-w-6xl mx-auto">
-        <Logo size={26} />
-        <div className="flex items-center gap-3 sm:gap-6 text-sm text-white/70">
-          <Link
-            href="#about"
-            className="hover:text-white transition-colors hidden sm:block"
-          >
-            About
-          </Link>
-          <Link
-            href="/methodology"
-            className="hover:text-white transition-colors hidden sm:block"
-          >
-            Methodology
-          </Link>
-          <Link href="/login">
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-white/20 text-white hover:bg-white/10 bg-transparent"
-            >
-              Sign in
-            </Button>
-          </Link>
-        </div>
-      </nav>
-
+    <div className="text-white overflow-x-hidden">
       {/* Hero — video frozen at first frame here */}
-      <main className="max-w-3xl mx-auto px-6 pt-24 pb-20 text-center">
-        <div className="inline-flex items-center gap-2 rounded-full bg-white/10 border border-white/20 px-3 py-1 text-xs font-medium text-white/80 mb-6">
-          Open source · Powered by PayPal & Every.org
-        </div>
+      <main className="max-w-3xl mx-auto px-6 pt-20 pb-20 text-center">
         <h1 className="text-3xl sm:text-5xl font-semibold tracking-tight leading-tight mb-6 text-white">
           Your AI has a footprint.
           <br />
@@ -192,54 +160,6 @@ export default function Home() {
           </a>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="border-t border-white/10 bg-black/40 backdrop-blur-sm py-8 px-6">
-        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/50">
-          <div className="flex items-center gap-1.5">
-            <Logo size={18} />
-          </div>
-          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
-            <Link
-              href="#about"
-              className="hover:text-white/80 transition-colors"
-            >
-              About
-            </Link>
-            <Link
-              href="/methodology"
-              className="hover:text-white/80 transition-colors"
-            >
-              Methodology
-            </Link>
-            <Link
-              href="/how-donations-work"
-              className="hover:text-white/80 transition-colors"
-            >
-              Donations
-            </Link>
-            <a
-              href="https://github.com/gitJamoo/ecodues"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-white/80 transition-colors flex items-center gap-1"
-            >
-              <GithubIcon className="w-3 h-3" /> GitHub
-            </a>
-          </div>
-          <p>
-            Made with care by{" "}
-            <a
-              href="https://j-m-s.dev/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline underline-offset-2 hover:text-white/80"
-            >
-              James Smith
-            </a>
-          </p>
-        </div>
-      </footer>
     </div>
   );
 }
