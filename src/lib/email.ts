@@ -61,12 +61,12 @@ export function renderWelcomeEmail(opts: {
     `Welcome to EcoDues! Here's how it works from here:`,
     ``,
     `Each month we tally your AI usage, estimate the climate damage it caused`,
-    `using our published methodology (https://ecodues.app/methodology), and add`,
+    `using our published methodology (https://ecodues.org/methodology), and add`,
     `the offset amount to your tab. When your tab crosses your charity's minimum,`,
     `we email you a one-click donation link — EcoDues never touches your money.`,
     ``,
     `Your first monthly email arrives on the 1st. Until then, connect your AI`,
-    `providers for automatic tracking: https://ecodues.app/providers`,
+    `providers for automatic tracking: https://ecodues.org/providers`,
     ``,
     `— EcoDues`,
   ].join("\n");
@@ -82,7 +82,7 @@ export function renderWelcomeEmail(opts: {
           <p style="margin:0 0 16px;font-size:15px;line-height:1.55;color:#4a5a4a">
             Hi ${escapeHtml(name)} — welcome to EcoDues. Each month we tally your AI usage,
             estimate the climate damage it caused using our
-            <a href="https://ecodues.app/methodology" style="color:#1f5a2f">published methodology</a>,
+            <a href="https://ecodues.org/methodology" style="color:#1f5a2f">published methodology</a>,
             and add the offset to your tab.
           </p>
           <p style="margin:0 0 20px;font-size:15px;line-height:1.55;color:#4a5a4a">
@@ -91,7 +91,7 @@ export function renderWelcomeEmail(opts: {
             nonprofit via PayPal Giving Fund or Every.org.
           </p>
 
-          <a href="https://ecodues.app/providers" style="display:inline-block;background:#1f5a2f;color:#ffffff;text-decoration:none;font-weight:600;font-size:15px;padding:14px 24px;border-radius:8px">Connect your providers →</a>
+          <a href="https://ecodues.org/providers" style="display:inline-block;background:#1f5a2f;color:#ffffff;text-decoration:none;font-weight:600;font-size:15px;padding:14px 24px;border-radius:8px">Connect your providers →</a>
 
           <p style="margin:24px 0 0;font-size:12px;line-height:1.55;color:#7a8a7a">
             Your first monthly email arrives on the 1st. Connecting providers now means

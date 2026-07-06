@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
   }
 
   // Send one summary email per user with broken keys.
-  const base = process.env.NEXT_PUBLIC_SITE_URL ?? "https://ecodues.app";
+  const base = process.env.NEXT_PUBLIC_SITE_URL ?? "https://ecodues.org";
   const reconnectUrl = `${base}/providers`;
   let emailed = 0;
 

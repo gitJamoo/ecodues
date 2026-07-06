@@ -16,7 +16,7 @@ export default function TermsPage() {
           <h1 className="text-4xl font-semibold tracking-tight mb-3 text-foreground">Terms of Service</h1>
           <p className="text-muted-foreground leading-relaxed">
             These terms govern your use of EcoDues at{" "}
-            <strong className="text-foreground">ecodues.app</strong>. By creating an account you agree to them. If
+            <strong className="text-foreground">ecodues.org</strong>. By creating an account you agree to them. If
             you don&rsquo;t agree, please don&rsquo;t use the service.
           </p>
         </div>
@@ -116,8 +116,8 @@ export default function TermsPage() {
               real.jamesmsmith@gmail.com
             </a>
             . Site:{" "}
-            <a href="https://ecodues.app" className="underline underline-offset-2 hover:text-foreground">
-              ecodues.app
+            <a href="https://ecodues.org" className="underline underline-offset-2 hover:text-foreground">
+              ecodues.org
             </a>
             .
           </p>

@@ -76,7 +76,7 @@ export async function GET(req: NextRequest) {
             {stat("Climate damage", `$${fmt(damage, 2)}`)}
             {stat("Pledged to charity", `$${fmt(donated, 2)}`)}
           </div>
-          <div style={{ display: "flex", fontSize: 26, color: "#9fbf9f" }}>ecodues.app</div>
+          <div style={{ display: "flex", fontSize: 26, color: "#9fbf9f" }}>ecodues.org</div>
         </div>
       </div>
     ),

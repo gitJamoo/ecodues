@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  const base = process.env.NEXT_PUBLIC_SITE_URL ?? "https://ecodues.app";
+  const base = process.env.NEXT_PUBLIC_SITE_URL ?? "https://ecodues.org";
   const settingsUrl = `${base}/settings`;
   const html = `<!doctype html>
 <html><head><meta charset="utf-8"><title>Unsubscribed — EcoDues</title>

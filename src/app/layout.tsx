@@ -6,7 +6,7 @@ import { ThemeProvider } from "next-themes";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://ecodues.app";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://ecodues.org";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

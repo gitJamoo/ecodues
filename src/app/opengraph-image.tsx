@@ -38,7 +38,7 @@ export default function OpengraphImage() {
 
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div style={{ display: "flex", fontSize: 24, color: "#9fbf9f" }}>Open source · Powered by PayPal &amp; Every.org</div>
-          <div style={{ display: "flex", fontSize: 26, color: "#9fbf9f" }}>ecodues.app</div>
+          <div style={{ display: "flex", fontSize: 26, color: "#9fbf9f" }}>ecodues.org</div>
         </div>
       </div>
     ),

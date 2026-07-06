@@ -16,7 +16,7 @@ export default function PrivacyPage() {
           <h1 className="text-4xl font-semibold tracking-tight mb-3 text-foreground">Privacy Policy</h1>
           <p className="text-muted-foreground leading-relaxed">
             EcoDues (&ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;) is operated at{" "}
-            <strong className="text-foreground">ecodues.app</strong>. This policy explains what data we collect, why we collect
+            <strong className="text-foreground">ecodues.org</strong>. This policy explains what data we collect, why we collect
             it, who processes it, and what rights you have.
           </p>
         </div>
@@ -152,8 +152,8 @@ export default function PrivacyPage() {
               real.jamesmsmith@gmail.com
             </a>
             . Site:{" "}
-            <a href="https://ecodues.app" className="underline underline-offset-2 hover:text-foreground">
-              ecodues.app
+            <a href="https://ecodues.org" className="underline underline-offset-2 hover:text-foreground">
+              ecodues.org
             </a>
             .
           </p>

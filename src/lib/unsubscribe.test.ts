@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll } from "vitest";
 
 beforeAll(() => {
   process.env.ENCRYPTION_KEY = "a".repeat(64);
-  process.env.NEXT_PUBLIC_SITE_URL = "https://ecodues.app";
+  process.env.NEXT_PUBLIC_SITE_URL = "https://ecodues.org";
 });
 
 describe("unsubscribe tokens", () => {
@@ -30,7 +30,7 @@ describe("unsubscribe tokens", () => {
     const { unsubscribeUrl, unsubscribeToken } = await import("./unsubscribe");
     const url = unsubscribeUrl("user-123");
     expect(url).toBe(
-      `https://ecodues.app/api/email/unsubscribe?uid=user-123&token=${unsubscribeToken("user-123")}`,
+      `https://ecodues.org/api/email/unsubscribe?uid=user-123&token=${unsubscribeToken("user-123")}`,
     );
   });
 });

@@ -1,8 +1,8 @@
 # EcoDues
 
-**Offset the climate damage of your AI usage.** EcoDues tallies your monthly AI usage across providers, estimates the energy, CO₂e, and social cost it caused using a [published methodology](https://ecodues.app/methodology), and nudges you to donate the offset (at a multiplier you choose) to vetted climate charities — via PayPal Giving Fund or Every.org. EcoDues never touches your money.
+**Offset the climate damage of your AI usage.** EcoDues tallies your monthly AI usage across providers, estimates the energy, CO₂e, and social cost it caused using a [published methodology](https://ecodues.org/methodology), and nudges you to donate the offset (at a multiplier you choose) to vetted climate charities — via PayPal Giving Fund or Every.org. EcoDues never touches your money.
 
-Live at **[ecodues.app](https://ecodues.app)**.
+Live at **[ecodues.org](https://ecodues.org)**.
 
 ## How it works
 
@@ -31,7 +31,7 @@ Architecture notes live in [CLAUDE.md](./CLAUDE.md). Database migrations are in 
 
 ## Transparency
 
-- The full emissions methodology, with cited constants, is at [/methodology](https://ecodues.app/methodology).
+- The full emissions methodology, with cited constants, is at [/methodology](https://ecodues.org/methodology).
 - Every user can export all of their data as CSV from the app.
 - The emissions engine is pure TypeScript (`src/lib/emissions/`) with a test suite locking in the math.
 

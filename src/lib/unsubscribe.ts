@@ -21,7 +21,7 @@ export function verifyUnsubscribeToken(userId: string, token: string): boolean {
 }
 
 export function unsubscribeUrl(userId: string): string {
-  const base = process.env.NEXT_PUBLIC_SITE_URL ?? "https://ecodues.app";
+  const base = process.env.NEXT_PUBLIC_SITE_URL ?? "https://ecodues.org";
   const token = unsubscribeToken(userId);
   return `${base}/api/email/unsubscribe?uid=${encodeURIComponent(userId)}&token=${token}`;
 }
