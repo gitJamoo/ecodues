@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
+import { authSchema, emailSchema, firstZodMessage } from "@/lib/validation";
 
 function GithubIcon() {
   return (
@@ -34,7 +35,7 @@ function Divider() {
   return (
     <div className="relative my-3">
       <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border" /></div>
-      <div className="relative text-center text-xs text-muted-foreground bg-white px-2 mx-auto w-fit">or</div>
+      <div className="relative text-center text-xs text-muted-foreground bg-card px-2 mx-auto w-fit">or</div>
     </div>
   );
 }
@@ -56,31 +57,72 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [oauthLoading, setOauthLoading] = useState<"github" | "google" | null>(null);
 
+  /** Map raw Supabase auth error messages to safe, generic user strings. */
+  function mapAuthError(raw: string | undefined): string {
+    const msg = (raw ?? "").toLowerCase();
+    if (msg.includes("invalid login credentials") || msg.includes("invalid credentials") || msg.includes("user not found") || msg.includes("email not found")) {
+      return "Incorrect email or password.";
+    }
+    if (msg.includes("email not confirmed") || msg.includes("email link is invalid or has expired")) {
+      return "Please confirm your email before signing in.";
+    }
+    if (msg.includes("user already registered") || msg.includes("already been registered")) {
+      return "An account with that email already exists. Try signing in instead.";
+    }
+    if (msg.includes("invalid token") || msg.includes("token has expired") || msg.includes("otp expired")) {
+      return "Link expired or invalid — request a new one.";
+    }
+    if (msg.includes("too many requests") || msg.includes("rate limit")) {
+      return "Too many attempts — please wait a moment and try again.";
+    }
+    if (msg.includes("password")) {
+      return "Password requirements not met.";
+    }
+    return "Something went wrong — please try again.";
+  }
+
   async function signIn() {
+    const validation = authSchema.safeParse({ email, password });
+    if (!validation.success) { toast.error(firstZodMessage(validation.error)); return; }
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
-    if (error) { toast.error(error.message); return; }
+    if (error) {
+      console.error("[login/signIn]", error.message);
+      toast.error(mapAuthError(error.message));
+      return;
+    }
     router.push("/dashboard");
   }
 
   async function signUp() {
+    const validation = authSchema.safeParse({ email, password });
+    if (!validation.success) { toast.error(firstZodMessage(validation.error)); return; }
     setLoading(true);
     const { error } = await supabase.auth.signUp({ email, password });
     setLoading(false);
-    if (error) { toast.error(error.message); return; }
+    if (error) {
+      console.error("[login/signUp]", error.message);
+      toast.error(mapAuthError(error.message));
+      return;
+    }
     toast.success("Check your email to confirm your account.");
   }
 
   async function magicLink() {
-    if (!email) { toast.error("Enter your email first."); return; }
+    const emailValidation = emailSchema.safeParse(email);
+    if (!emailValidation.success) { toast.error(firstZodMessage(emailValidation.error)); return; }
     setLoading(true);
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: { emailRedirectTo: `${location.origin}/auth/confirm` },
     });
     setLoading(false);
-    if (error) { toast.error(error.message); return; }
+    if (error) {
+      console.error("[login/magicLink]", error.message);
+      toast.error(mapAuthError(error.message));
+      return;
+    }
     toast.success("Magic link sent — check your inbox.");
   }
 
@@ -91,7 +133,8 @@ export default function LoginPage() {
       options: { redirectTo: `${location.origin}/auth/callback` },
     });
     if (error) {
-      toast.error(error.message);
+      console.error("[login/oauth]", error.message);
+      toast.error(mapAuthError(error.message));
       setOauthLoading(null);
     }
     // on success the browser is redirected — no need to clear loading
@@ -105,7 +148,7 @@ export default function LoginPage() {
           <p className="text-sm text-muted-foreground mt-1">Make your AI use net-positive</p>
         </div>
 
-        <div className="bg-white rounded-xl border border-border p-6 shadow-sm">
+        <div className="bg-card rounded-xl border border-border p-6 shadow-sm">
           {/* OAuth buttons — shown above the tabs */}
           <div className="space-y-2 mb-4">
             <Button

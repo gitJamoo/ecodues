@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse, type NextRequest } from "next/server";
+import { logger } from "@/lib/logger";
 
 export async function GET(request: NextRequest) {
   const url = new URL(request.url);
@@ -14,6 +15,12 @@ export async function GET(request: NextRequest) {
       // The onboarding page redirects to /dashboard if already onboarded.
       return NextResponse.redirect(new URL("/onboarding", request.url));
     }
+    // Log the raw error server-side; redirect the user to a generic error state.
+    logger.error("auth/callback", "OAuth code exchange failed", {
+      rawError: error.message,
+    });
+  } else {
+    logger.warn("auth/callback", "OAuth callback received without a code parameter");
   }
 
   return NextResponse.redirect(new URL(`/login?error=oauth&next=${next}`, request.url));

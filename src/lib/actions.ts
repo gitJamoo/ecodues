@@ -13,6 +13,16 @@ import { DEV_MODE, DEV_USER } from "@/lib/dev-mode";
 import { rateLimit, RATE_LIMITED_ERROR } from "@/lib/rate-limit";
 import { sendEmail, renderWelcomeEmail } from "@/lib/email";
 import { unsubscribeUrl } from "@/lib/unsubscribe";
+import { logger } from "@/lib/logger";
+import {
+  apiKeySchema,
+  labelSchema,
+  displayNameSchema,
+  tokensSchema,
+  spendSchema,
+  paymentAmountSchema,
+  firstZodMessage,
+} from "@/lib/validation";
 
 async function requireUser() {
   if (DEV_MODE) return { supabase: null as never, user: DEV_USER as never };
@@ -23,6 +33,13 @@ async function requireUser() {
 }
 
 export async function connectApiKey(provider: ProviderId, apiKey: string, label?: string) {
+  // Validate inputs before hitting the database.
+  const keyResult = apiKeySchema.safeParse(apiKey);
+  if (!keyResult.success) return { error: firstZodMessage(keyResult.error) };
+
+  const labelResult = labelSchema.safeParse(label);
+  if (!labelResult.success) return { error: firstZodMessage(labelResult.error) };
+
   if (DEV_MODE) {
     const connector = connectorFor(provider);
     return { ok: true, isStub: connector.isStub };
@@ -38,13 +55,24 @@ export async function connectApiKey(provider: ProviderId, apiKey: string, label?
     encrypted_key: encryptSecret(apiKey), status: "active",
     label: label?.trim().slice(0, 64) || null,
   });
-  if (error) return { error: "Couldn't save the connection — try again." };
+  if (error) {
+    logger.error("connectApiKey", "DB insert failed", { userId: user.id, provider, dbError: error.message });
+    return { error: "Couldn't save the connection — try again." };
+  }
   revalidatePath("/providers");
   revalidatePath("/dashboard");
   return { ok: true, isStub: connector.isStub };
 }
 
 export async function connectTier(provider: ProviderId, tierId: string, opts?: { connectionId?: string; label?: string }) {
+  // tierId must be a non-empty string.
+  if (!tierId || typeof tierId !== "string" || tierId.trim().length === 0) {
+    return { error: "Please select a plan." };
+  }
+
+  const labelResult = labelSchema.safeParse(opts?.label);
+  if (!labelResult.success) return { error: firstZodMessage(labelResult.error) };
+
   if (DEV_MODE) return { ok: true };
   const { supabase, user } = await requireUser();
   const label = opts?.label?.trim().slice(0, 64) || null;
@@ -53,12 +81,18 @@ export async function connectTier(provider: ProviderId, tierId: string, opts?: {
     const { error } = await supabase.from("provider_connections")
       .update({ tier_id: tierId, status: "active", ...(label ? { label } : {}) })
       .eq("id", opts.connectionId).eq("user_id", user.id);
-    if (error) return { error: "Couldn't update the plan — try again." };
+    if (error) {
+      logger.error("connectTier", "DB update failed", { userId: user.id, provider, dbError: error.message });
+      return { error: "Couldn't update the plan — try again." };
+    }
   } else {
     const { error } = await supabase.from("provider_connections").insert({
       user_id: user.id, provider, kind: "tier", tier_id: tierId, status: "active", label,
     });
-    if (error) return { error: "Couldn't save the plan — try again." };
+    if (error) {
+      logger.error("connectTier", "DB insert failed", { userId: user.id, provider, dbError: error.message });
+      return { error: "Couldn't save the plan — try again." };
+    }
   }
   revalidatePath("/providers");
   revalidatePath("/dashboard");
@@ -72,6 +106,16 @@ export async function addManualUsage(
   inputTokens: number,
   outputTokens: number,
 ) {
+  // Validate numeric inputs.
+  const spendResult = spendSchema.safeParse(spendUsd);
+  if (!spendResult.success) return { error: firstZodMessage(spendResult.error) };
+
+  const inResult = tokensSchema.safeParse(inputTokens);
+  if (!inResult.success) return { error: firstZodMessage(inResult.error) };
+
+  const outResult = tokensSchema.safeParse(outputTokens);
+  if (!outResult.success) return { error: firstZodMessage(outResult.error) };
+
   if (DEV_MODE) return { ok: true };
   const { supabase, user } = await requireUser();
   if (!rateLimit(`usage:${user.id}`, 20, 60_000)) return { error: RATE_LIMITED_ERROR };
@@ -101,6 +145,12 @@ export async function saveSettings(form: {
   leaderboardOptIn?: boolean;
   showPlansInSources?: boolean;
 }) {
+  // Validate display name if provided.
+  if (form.displayName !== undefined) {
+    const result = displayNameSchema.safeParse(form.displayName);
+    if (!result.success) return { error: firstZodMessage(result.error) };
+  }
+
   if (DEV_MODE) return { ok: true };
   const { supabase, user } = await requireUser();
   if (!rateLimit(`settings:${user.id}`, 30, 60_000)) return { error: RATE_LIMITED_ERROR };
@@ -123,7 +173,10 @@ export async function deleteAccount() {
   const { user } = await requireUser();
   const admin = createAdminClient();
   const { error } = await admin.auth.admin.deleteUser(user.id);
-  if (error) return { error: error.message };
+  if (error) {
+    logger.error("deleteAccount", "Admin deleteUser failed", { userId: user.id, rawError: error.message });
+    return { error: "Something went wrong — please try again." };
+  }
   const supabase = await createClient();
   await supabase.auth.signOut();
   redirect("/");
@@ -158,6 +211,20 @@ export async function updateUsageRecord(id: string, patch: {
   output_tokens?: number;
   spend_usd?: number;
 }) {
+  // Validate numeric fields if provided.
+  if (patch.input_tokens !== undefined) {
+    const r = tokensSchema.safeParse(patch.input_tokens);
+    if (!r.success) return { error: firstZodMessage(r.error) };
+  }
+  if (patch.output_tokens !== undefined) {
+    const r = tokensSchema.safeParse(patch.output_tokens);
+    if (!r.success) return { error: firstZodMessage(r.error) };
+  }
+  if (patch.spend_usd !== undefined) {
+    const r = spendSchema.safeParse(patch.spend_usd);
+    if (!r.success) return { error: firstZodMessage(r.error) };
+  }
+
   if (DEV_MODE) return { ok: true };
   const { supabase, user } = await requireUser();
   await supabase.from("usage_records").update(patch).eq("id", id).eq("user_id", user.id);
@@ -172,10 +239,12 @@ export async function logPayment(form: {
   externalId?: string | null;
   notes?: string | null;
 }) {
-  const amount = Math.max(0.01, Math.round(Number(form.amountUsd) * 100) / 100);
-  if (!Number.isFinite(amount) || amount <= 0) {
-    return { error: "Enter an amount greater than zero." };
-  }
+  // Validate amount with schema (covers > 0, finite, <= 1M).
+  const amountResult = paymentAmountSchema.safeParse(Number(form.amountUsd));
+  if (!amountResult.success) return { error: firstZodMessage(amountResult.error) };
+
+  const amount = Math.round(amountResult.data * 100) / 100;
+
   if (DEV_MODE) return { ok: true, amountUsd: amount };
 
   const { supabase, user } = await requireUser();
@@ -248,16 +317,26 @@ export async function backfillUsage(entries: Array<{
   const currentStart = periodDateString(currentPeriod(new Date()));
   const clean = [];
   for (const e of entries) {
+    // Period format and range (kept from original hand-rolled validation).
     if (!/^\d{4}-\d{2}-01$/.test(e.period)) return { error: `Invalid period "${e.period}".` };
     if (e.period < BACKFILL_MIN_PERIOD || e.period >= currentStart) {
       return { error: "Backfill months must be between Nov 2022 and last month." };
     }
-    const inTok = Math.round(Number(e.inputTokens));
-    const outTok = Math.round(Number(e.outputTokens));
-    const spend = Math.round(Number(e.spendUsd) * 100) / 100;
-    if (![inTok, outTok, spend].every(n => Number.isFinite(n) && n >= 0)) {
-      return { error: "Usage numbers must be zero or positive." };
-    }
+
+    // Numeric fields — validated with shared zod schemas.
+    const inResult = tokensSchema.safeParse(Number(e.inputTokens));
+    if (!inResult.success) return { error: `Input tokens: ${firstZodMessage(inResult.error)}` };
+
+    const outResult = tokensSchema.safeParse(Number(e.outputTokens));
+    if (!outResult.success) return { error: `Output tokens: ${firstZodMessage(outResult.error)}` };
+
+    const spendResult = spendSchema.safeParse(Number(e.spendUsd));
+    if (!spendResult.success) return { error: `Spend: ${firstZodMessage(spendResult.error)}` };
+
+    const inTok = Math.round(inResult.data);
+    const outTok = Math.round(outResult.data);
+    const spend = Math.round(spendResult.data * 100) / 100;
+
     if (inTok === 0 && outTok === 0 && spend === 0) continue;
     clean.push({
       user_id: user.id,
@@ -274,7 +353,10 @@ export async function backfillUsage(entries: Array<{
 
   const { data: before } = await supabase.from("profiles").select("pending_donation_usd").eq("id", user.id).single();
   const { error } = await supabase.from("usage_records").insert(clean);
-  if (error) return { error: "Couldn't save backfill records — try again." };
+  if (error) {
+    logger.error("backfillUsage", "DB insert failed", { userId: user.id, entryCount: clean.length, dbError: error.message });
+    return { error: "Couldn't save backfill records — try again." };
+  }
 
   // Re-settle every affected month so estimates + ledger + tab pick it up.
   const periods = [...new Set(clean.map(c => c.period))].sort();
