@@ -79,7 +79,7 @@ export function OnboardingWizard({ charities }: { charities: Charity[] }) {
           ))}
         </div>
 
-        <div className="bg-white rounded-xl border border-border p-6 shadow-sm">
+        <div className="bg-card rounded-xl border border-border p-6 shadow-sm">
           {step === 0 && (
             <>
               <h2 className="font-semibold text-base mb-1">Tell us about your AI usage</h2>

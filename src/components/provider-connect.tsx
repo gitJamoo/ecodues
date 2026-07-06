@@ -281,7 +281,7 @@ export function ProviderConnect({ connections, periodMode = "current" }: {
       </div>
 
       {/* Custom / freeform — for anything not in the catalog at all */}
-      <div className="rounded-xl border border-border bg-white p-5">
+      <div className="rounded-xl border border-border bg-card p-5">
         <div className="flex items-center gap-2 mb-1">
           <Sparkles className="w-4 h-4 text-primary" />
           <h3 className="text-sm font-medium">Still not listed? Log any AI usage manually</h3>
@@ -620,7 +620,7 @@ function ProviderCard(props: ProviderCardProps) {
                 {p.notes.map((n, i) => <li key={i}>· {n}</li>)}
               </ul>
               {p.confidence === "low" && (
-                <p className="text-xs text-amber-600">Low confidence — double-check the numbers look right before saving.</p>
+                <p className="text-xs text-amber-600 dark:text-amber-400">Low confidence — double-check the numbers look right before saving.</p>
               )}
               <div className="flex gap-2 pt-1">
                 <Button size="sm" className="h-7 text-xs" onClick={() => onPasteSubmit(pid)} disabled={loading === pid + "_paste"}>

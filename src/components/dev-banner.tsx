@@ -62,7 +62,7 @@ export function DevBanner() {
           onClick={() => !sending && setOpen(false)}
         >
           <div
-            className="w-full max-w-md rounded-xl bg-white text-foreground shadow-xl border border-border p-6 space-y-4"
+            className="w-full max-w-md rounded-xl bg-card text-foreground shadow-xl border border-border p-6 space-y-4"
             onClick={(e) => e.stopPropagation()}
           >
             <div>

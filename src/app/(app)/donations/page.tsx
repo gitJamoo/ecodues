@@ -45,9 +45,9 @@ export default async function DonationsPage() {
       </div>
 
       {pendingCount > 0 && (
-        <div className="flex items-start gap-3 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 text-sm">
-          <span className="text-amber-600 font-semibold shrink-0">Action needed</span>
-          <span className="text-amber-800">
+        <div className="flex items-start gap-3 rounded-xl bg-amber-50 border border-amber-200 dark:bg-amber-950/30 dark:border-amber-800/50 px-4 py-3 text-sm">
+          <span className="text-amber-600 dark:text-amber-400 font-semibold shrink-0">Action needed</span>
+          <span className="text-amber-800 dark:text-amber-200">
             {pendingCount === 1 ? "1 donation is" : `${pendingCount} donations are`} waiting for payment.
             Click <strong>Pay now</strong> next to each row to complete via Every.org.
             They handle your card, issue a tax receipt, and route the funds — we never touch your money.
@@ -84,7 +84,7 @@ export default async function DonationsPage() {
                         <Badge className="text-[10px] bg-primary/10 text-primary border-primary/20">Donated ✓</Badge>
                       )}
                       {l.status === "pending" && (
-                        <Badge variant="outline" className="text-[10px] text-amber-600 border-amber-300">Awaiting payment</Badge>
+                        <Badge variant="outline" className="text-[10px] text-amber-600 border-amber-300 dark:text-amber-400 dark:border-amber-700">Awaiting payment</Badge>
                       )}
                       {l.status === "simulated" && (
                         <Badge variant="secondary" className="text-[10px] text-muted-foreground">Simulated</Badge>

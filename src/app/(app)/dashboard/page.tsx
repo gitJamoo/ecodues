@@ -331,7 +331,7 @@ export default async function DashboardPage() {
                           <td className="px-4 py-3">
                             {l.status === "paid"            && <Badge className="text-[10px] bg-primary/10 text-primary border-primary/20">Paid ✓</Badge>}
                             {l.status === "partially_paid"  && <Badge variant="outline" className="text-[10px] text-primary border-primary/40">Partially paid</Badge>}
-                            {l.status === "accrued"         && <Badge variant="outline" className="text-[10px] text-amber-600 border-amber-300">On tab</Badge>}
+                            {l.status === "accrued"         && <Badge variant="outline" className="text-[10px] text-amber-600 border-amber-300 dark:text-amber-400 dark:border-amber-700">On tab</Badge>}
                             {l.status === "simulated"       && <Badge variant="secondary" className="text-[10px]">Simulated</Badge>}
                           </td>
                           <td className="px-4 py-3" />

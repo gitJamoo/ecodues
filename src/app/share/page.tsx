@@ -63,7 +63,7 @@ export async function generateMetadata({ searchParams }: { searchParams: SearchP
 export default async function SharePage({ searchParams }: { searchParams: SearchParams }) {
   const { period, name, imageUrl } = parseCard(await searchParams);
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background">
       <nav className="border-b border-border px-6 py-4 flex items-center justify-between max-w-4xl mx-auto">
         <Link href="/"><Logo size={24} /></Link>
         <Link href="/login" className="text-sm text-muted-foreground hover:text-foreground">Sign in →</Link>

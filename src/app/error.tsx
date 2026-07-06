@@ -12,7 +12,7 @@ export default function ErrorPage({
   reset: () => void;
 }) {
   return (
-    <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-8 px-6 text-center">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-8 px-6 text-center">
       <Link href="/">
         <Logo size={28} />
       </Link>

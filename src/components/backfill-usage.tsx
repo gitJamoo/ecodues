@@ -127,7 +127,7 @@ export function BackfillUsage({ defaultOpen = false }: { defaultOpen?: boolean }
   }
 
   return (
-    <div className="rounded-xl border border-border bg-white p-5">
+    <div className="rounded-xl border border-border bg-card p-5">
       <button
         className="flex w-full items-center justify-between gap-2 text-left"
         onClick={() => setOpen(o => !o)}
@@ -254,7 +254,7 @@ export function BackfillUsage({ defaultOpen = false }: { defaultOpen?: boolean }
           )}
 
           {sinceMonth && months.length === 0 && (
-            <p className="text-xs text-amber-600">Pick a month between Nov 2022 and last month.</p>
+            <p className="text-xs text-amber-600 dark:text-amber-400">Pick a month between Nov 2022 and last month.</p>
           )}
         </div>
       )}
