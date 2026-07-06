@@ -21,6 +21,7 @@ export interface TierConnection {
   id: string;
   provider: string;
   tier_id: string;
+  label?: string | null;
 }
 
 function parseTierId(tierId: string): { baseId: string; pct: number } {
@@ -48,7 +49,8 @@ function PlanRow({ conn }: { conn: TierConnection }) {
 
   async function save() {
     setSaving(true);
-    await connectTier(conn.provider as never, pct < 100 ? `${tierId}:${pct}` : tierId);
+    // Update THIS row — users can hold several plans per provider now.
+    await connectTier(conn.provider as never, pct < 100 ? `${tierId}:${pct}` : tierId, { connectionId: conn.id });
     setSaving(false);
     toast.success("Plan updated — reflected in this cycle's projection");
     router.refresh();
@@ -67,7 +69,10 @@ function PlanRow({ conn }: { conn: TierConnection }) {
         {LOGO_SUPPORTED.has(conn.provider)
           ? <ProviderLogo provider={conn.provider as "openai" | "anthropic" | "openrouter" | "gemini"} size={16} />
           : <span className="inline-flex w-4 h-4 shrink-0 rounded bg-muted-foreground/20" />}
-        <span className="text-sm font-medium">{meta?.label ?? conn.provider}</span>
+        <span className="text-sm font-medium">
+          {meta?.label ?? conn.provider}
+          {conn.label && <span className="text-xs text-muted-foreground font-normal ml-1.5">· {conn.label}</span>}
+        </span>
       </div>
 
       <div className="w-44">
@@ -120,7 +125,7 @@ export function SubscriptionPlans({ connections }: { connections: TierConnection
         {connections.map((c) => <PlanRow key={c.id} conn={c} />)}
       </div>
       <p className="text-xs text-muted-foreground mt-2">
-        Projected into this cycle&apos;s stats above; committed as real usage records when the monthly cycle runs on the 1st.
+        Accrues into this cycle&apos;s stats a little each day (prorated through the month) via the daily sync.
       </p>
     </div>
   );

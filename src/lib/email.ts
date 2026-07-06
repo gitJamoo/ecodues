@@ -1,5 +1,6 @@
 const RESEND_API = "https://api.resend.com/emails";
-const FROM = process.env.RESEND_FROM ?? "EcoDues <notifications@ecodues.app>";
+// Default sender lives on ecodues.org — the Resend-verified sending domain.
+const FROM = process.env.RESEND_FROM ?? "EcoDues <notifications@ecodues.org>";
 
 interface SendArgs {
   to: string;

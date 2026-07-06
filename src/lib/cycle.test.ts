@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildCycle, previousPeriod, periodDateString, type UsageRecordLike } from "./cycle";
+import { buildCycle, previousPeriod, currentPeriod, monthFractionElapsed, periodDateString, type UsageRecordLike } from "./cycle";
 import { estimateFromTokens, estimateFromSpend, donationForDamage } from "./emissions/engine";
 import { classifyModel } from "./emissions/models";
 
@@ -62,5 +62,30 @@ describe("periodDateString", () => {
   it("zero-pads the month", () => {
     expect(periodDateString({ year: 2026, month: 6 })).toBe("2026-06-01");
     expect(periodDateString({ year: 2026, month: 12 })).toBe("2026-12-01");
+  });
+});
+
+describe("currentPeriod", () => {
+  it("returns the UTC month of the given date", () => {
+    expect(currentPeriod(new Date(Date.UTC(2026, 6, 5)))).toEqual({ year: 2026, month: 7 });
+    expect(currentPeriod(new Date(Date.UTC(2026, 0, 31)))).toEqual({ year: 2026, month: 1 });
+  });
+});
+
+describe("monthFractionElapsed", () => {
+  it("returns 1 for past months", () => {
+    expect(monthFractionElapsed({ year: 2026, month: 6 }, new Date(Date.UTC(2026, 6, 5)))).toBe(1);
+    expect(monthFractionElapsed({ year: 2025, month: 12 }, new Date(Date.UTC(2026, 6, 5)))).toBe(1);
+  });
+
+  it("prorates the in-progress month by days elapsed", () => {
+    // July 5 → 5/31 of July elapsed
+    expect(monthFractionElapsed({ year: 2026, month: 7 }, new Date(Date.UTC(2026, 6, 5)))).toBeCloseTo(5 / 31, 10);
+    // Feb 14 2026 (28-day month) → 14/28
+    expect(monthFractionElapsed({ year: 2026, month: 2 }, new Date(Date.UTC(2026, 1, 14)))).toBeCloseTo(0.5, 10);
+  });
+
+  it("reaches 1 on the last day of the month", () => {
+    expect(monthFractionElapsed({ year: 2026, month: 7 }, new Date(Date.UTC(2026, 6, 31)))).toBe(1);
   });
 });

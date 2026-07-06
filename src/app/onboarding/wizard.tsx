@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ProviderConnect } from "@/components/provider-connect";
+import { BackfillUsage } from "@/components/backfill-usage";
 import { CharityPicker } from "@/components/charity-picker";
 import { MultiplierSlider } from "@/components/multiplier-slider";
 import { saveSettings, completeOnboarding } from "@/lib/actions";
@@ -86,6 +87,12 @@ export function OnboardingWizard({ charities }: { charities: Charity[] }) {
                 No API key needed — you can paste your usage dashboard text, type in last month&apos;s spend, or pick your subscription plan. We&apos;ll handle the math.
               </p>
               <ProviderConnect connections={[]} periodMode="previous" />
+              <div className="mt-4">
+                <BackfillUsage />
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                Tip: a subscription plan above already covers last month — backfill the months before that.
+              </p>
               <Button className="w-full mt-6" onClick={() => setStep(1)}>Continue</Button>
             </>
           )}

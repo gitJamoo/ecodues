@@ -88,7 +88,7 @@ export function DevBanner() {
                 className="w-full rounded-md border border-border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30"
               />
               <p className="text-[11px] text-muted-foreground">
-                Requires <code className="font-mono">RESEND_API_KEY</code> in <code className="font-mono">.env.local</code>. Sender defaults to <code className="font-mono">RESEND_FROM</code> or <code className="font-mono">notifications@ecodues.app</code>.
+                Requires <code className="font-mono">RESEND_API_KEY</code> in <code className="font-mono">.env.local</code>. Sender defaults to <code className="font-mono">RESEND_FROM</code> or <code className="font-mono">notifications@ecodues.org</code>.
               </p>
             </div>
             <div className="flex justify-end gap-2 pt-1">

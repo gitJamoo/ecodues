@@ -1,5 +1,6 @@
 import { getConnections } from "@/lib/data";
 import { ProviderConnect } from "@/components/provider-connect";
+import { BackfillUsage } from "@/components/backfill-usage";
 
 export default async function ProvidersPage() {
   const connections = await getConnections();
@@ -11,6 +12,7 @@ export default async function ProvidersPage() {
         <p className="text-sm text-muted-foreground mt-0.5">Connect your AI accounts so we can measure your usage</p>
       </div>
       <ProviderConnect connections={connections} />
+      <BackfillUsage />
     </div>
   );
 }

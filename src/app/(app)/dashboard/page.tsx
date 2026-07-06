@@ -16,8 +16,11 @@ import { ShareImpact } from "@/components/share-impact";
 import { computeBadges, computeStreak } from "@/lib/badges";
 import { SubscriptionPlans, type TierConnection } from "@/components/subscription-plans";
 import { DonationMath } from "@/components/donation-math";
+import { UsageSources, type UsageSourceEntry } from "@/components/usage-sources";
+import { providerById } from "@/lib/providers/catalog";
 
-type UsageRow    = { id: string; period: string; provider: string; model: string; input_tokens: number; output_tokens: number; spend_usd: number; source: string };
+type UsageRow    = { id: string; period: string; provider: string; model: string; input_tokens: number; output_tokens: number; spend_usd: number; source: string; connection_id?: string | null };
+type Conn        = { id: string; provider: string; kind: string; tier_id?: string | null; status: string; label?: string | null };
 type EstimateRow = { period: string; kwh: number; kg_co2e: number; damage_usd: number };
 type LedgerRow   = { id: string; period: string; damage_usd: number; multiplier: number; donation_usd: number; charity_id: string; status: string; checkout_link?: string | null; charities?: { name: string } | null };
 
@@ -46,28 +49,99 @@ export default async function DashboardPage() {
   const currentPeriodPrefix = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}`;
   const currentUsage = (usage as UsageRow[]).filter(u => u.period.startsWith(currentPeriodPrefix));
 
-  // Subscription tiers only materialize usage rows when the monthly cycle
-  // runs (for the PREVIOUS period), so project them live for this cycle.
-  const connections = await getConnections();
-  const tierConns = connections.filter((c: { kind: string; tier_id?: string | null }) => c.kind === "tier" && c.tier_id);
-  const tierStats = tierConns.reduce((acc: { kwh: number; kgCo2e: number; damageUsd: number }, c: { tier_id?: string | null }) => {
-    const tid = String(c.tier_id);
-    const t = tierById(tid);
-    if (!t) return acc;
-    const pctStr = tid.split(":")[1];
-    const pct = pctStr ? Math.min(1, Math.max(0, Number(pctStr) / 100)) : 1;
-    const est = estimateFromTokens(t.modelClass, t.monthlyInputTokens * pct, t.monthlyOutputTokens * pct);
-    return { kwh: acc.kwh + est.kwh, kgCo2e: acc.kgCo2e + est.kgCo2e, damageUsd: acc.damageUsd + est.damageUsd };
-  }, { kwh: 0, kgCo2e: 0, damageUsd: 0 });
+  const connections = (await getConnections()) as Conn[];
+  const tierConns = connections.filter((c) => c.kind === "tier" && c.tier_id);
 
-  // Live stats for this cycle = logged usage + projected subscription usage
+  // Attribute this month's rows to the connection that produced them. Legacy
+  // rows (written before connection_id existed) fall back to the first
+  // matching connection of the right kind; manual/backfill rows go to their
+  // own bucket.
+  const rowsByConn = new Map<string, UsageRow[]>();
+  const manualRows: UsageRow[] = [];
+  for (const u of currentUsage) {
+    let cid = u.connection_id ?? null;
+    if (!cid) {
+      if (u.source === "api") cid = connections.find((c) => c.provider === u.provider && c.kind === "api_key")?.id ?? null;
+      else if (u.source === "tier_estimate") cid = connections.find((c) => c.provider === u.provider && c.kind === "tier")?.id ?? null;
+    }
+    if (cid) rowsByConn.set(cid, [...(rowsByConn.get(cid) ?? []), u]);
+    else manualRows.push(u);
+  }
+
+  // Tier plans whose prorated rows haven't been materialized by a sync yet
+  // still get a live prorated estimate, so a just-connected plan shows up
+  // immediately without double counting after the next sync.
+  const daysInMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0)).getUTCDate();
+  const monthFrac = Math.min(1, now.getUTCDate() / daysInMonth);
+  const pendingTierEstimate = (c: Conn) => {
+    const t = tierById(String(c.tier_id));
+    if (!t) return null;
+    const pctStr = String(c.tier_id).split(":")[1];
+    const pct = pctStr ? Math.min(1, Math.max(0, Number(pctStr) / 100)) : 1;
+    return estimateFromTokens(t.modelClass, t.monthlyInputTokens * pct * monthFrac, t.monthlyOutputTokens * pct * monthFrac);
+  };
+  const pendingTierStats = tierConns
+    .filter((c) => (rowsByConn.get(c.id) ?? []).length === 0)
+    .reduce((acc, c) => {
+      const est = pendingTierEstimate(c);
+      return est
+        ? { kwh: acc.kwh + est.kwh, kgCo2e: acc.kgCo2e + est.kgCo2e, damageUsd: acc.damageUsd + est.damageUsd }
+        : acc;
+    }, { kwh: 0, kgCo2e: 0, damageUsd: 0 });
+
+  // Live stats for this cycle = month-to-date records + not-yet-synced plans
   const usageStats = liveStatsFrom(currentUsage);
   const cycle = {
-    kwh: usageStats.kwh + tierStats.kwh,
-    kgCo2e: usageStats.kgCo2e + tierStats.kgCo2e,
-    damageUsd: usageStats.damageUsd + tierStats.damageUsd,
+    kwh: usageStats.kwh + pendingTierStats.kwh,
+    kgCo2e: usageStats.kgCo2e + pendingTierStats.kgCo2e,
+    damageUsd: usageStats.damageUsd + pendingTierStats.damageUsd,
   };
   const nextDonation = donationForDamage(cycle.damageUsd, multiplier);
+
+  // Per-source breakdown for the "Usage by source" section. Plan estimates
+  // are hidden by default (they have their own section below) — opt in via
+  // the "Show plans in Usage by source" settings toggle.
+  const showPlansInSources = Boolean((profile as { show_plans_in_sources?: boolean }).show_plans_in_sources);
+  const sourceConnections = connections.filter((c) => showPlansInSources || c.kind !== "tier");
+  const sourceEntries: UsageSourceEntry[] = sourceConnections.map((c) => {
+    const rows = rowsByConn.get(c.id) ?? [];
+    const meta = providerById(c.provider);
+    const providerLabel = meta?.label ?? c.provider;
+    const tierLabel = c.kind === "tier" ? tierById(String(c.tier_id ?? ""))?.label ?? "plan" : null;
+    const name = c.label || tierLabel || "API key";
+    const status = (c.status === "error" ? "error" : "active") as "active" | "error";
+    if (rows.length > 0) {
+      const stats = liveStatsFrom(rows);
+      return {
+        id: c.id, provider: c.provider, providerLabel, name,
+        kind: (c.kind === "tier" ? "tier" : "api_key") as UsageSourceEntry["kind"], status,
+        kgCo2e: stats.kgCo2e, damageUsd: stats.damageUsd,
+        spendUsd: rows.reduce((s, r) => s + Number(r.spend_usd), 0),
+        isEstimate: c.kind === "tier",
+        note: c.kind === "tier" ? "Plan estimate, prorated to today" : "Synced from provider API",
+      };
+    }
+    const est = c.kind === "tier" ? pendingTierEstimate(c) : null;
+    return {
+      id: c.id, provider: c.provider, providerLabel, name,
+      kind: (c.kind === "tier" ? "tier" : "api_key") as UsageSourceEntry["kind"], status,
+      kgCo2e: est?.kgCo2e ?? 0, damageUsd: est?.damageUsd ?? 0, spendUsd: 0,
+      isEstimate: true,
+      note: c.kind === "tier"
+        ? "Plan estimate — first sync pending"
+        : status === "error" ? "Last sync failed — check this key on the Providers page" : "No usage synced yet",
+    };
+  });
+  if (manualRows.length > 0) {
+    const stats = liveStatsFrom(manualRows);
+    sourceEntries.push({
+      id: "__manual", provider: "manual", providerLabel: "Manual", name: "Logged & backfilled usage",
+      kind: "manual", status: "active",
+      kgCo2e: stats.kgCo2e, damageUsd: stats.damageUsd,
+      spendUsd: manualRows.reduce((s, r) => s + Number(r.spend_usd), 0),
+      isEstimate: false, note: "Entered by you",
+    });
+  }
 
   // History: aggregate from committed emission_estimates
   const histKgCo2e = (estimates as EstimateRow[]).reduce((s, e) => s + Number(e.kg_co2e), 0);
@@ -141,6 +215,8 @@ export default async function DashboardPage() {
             />
           </div>
 
+          <UsageSources entries={sourceEntries} />
+
           <SubscriptionPlans connections={tierConns as TierConnection[]} />
 
           {currentUsage.length > 0 ? (
@@ -150,9 +226,13 @@ export default async function DashboardPage() {
             </div>
           ) : (
             <div className="rounded-xl border border-dashed border-border p-10 text-center">
-              <p className="text-sm text-muted-foreground mb-3">No usage recorded this month yet</p>
+              <p className="text-sm text-muted-foreground mb-3">
+                {cycle.kgCo2e > 0
+                  ? "No usage records committed for this month yet — the stats above are live plan estimates. Records appear after the next sync."
+                  : "No usage recorded this month yet"}
+              </p>
               <Link href="/providers">
-                <Button variant="outline" size="sm">Connect a provider</Button>
+                <Button variant="outline" size="sm">Don&apos;t see your usage? Check here!</Button>
               </Link>
             </div>
           )}

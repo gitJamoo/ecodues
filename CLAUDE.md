@@ -21,17 +21,20 @@ TypeScript is the other correctness check: `npx tsc --noEmit`.
 
 ```
 User logs AI usage
-  → stored in usage_records (provider, model, tokens, spend, period)
-  → monthly cycle (cron /api/cron/monthly or manual) runs buildCycle()
+  → stored in usage_records (provider, model, tokens, spend, period,
+    connection_id → provider_connections, source api|tier_estimate|manual|backfill)
+  → cycles run buildCycle(): daily cron syncs the CURRENT month (live ticker,
+    tier estimates prorated by days elapsed); monthly cron finalizes the
+    PREVIOUS month on the 1st; "Sync now" button = current month
   → emits emission_estimates (kWh, kg CO₂e, damage_usd)
   → donation_ledger row (damage × multiplier, status "accrued")
   → profiles.pending_donation_usd (the "tab") accrues the delta
-  → when tab ≥ charity.min_donation_usd, cron emails a checkout link
+  → when tab ≥ charity.min_donation_usd, monthly cron emails a checkout link
   → user pays on PayPal Giving Fund / Every.org; logPayment() records it
     in donation_payments and decrements the tab
 ```
 
-The core calculation is **pure and provider-agnostic** — `buildCycle()` in `src/lib/cycle.ts` takes `UsageRecordLike[]` and a multiplier, calls the emissions engine, and returns totals. No side effects.
+The core calculation is **pure and provider-agnostic** — `buildCycle()` in `src/lib/cycle.ts` takes `UsageRecordLike[]` and a multiplier, calls the emissions engine, and returns totals. No side effects. `runMonthlyCycleForUser()` = refresh connector/tier usage rows, then `settlePeriodForUser()` = recompute estimates + ledger from whatever rows exist (re-run-safe via ledger delta; also used by `backfillUsage()` for historical months, capped at Nov 2022).
 
 ### Emissions engine (`src/lib/emissions/`)
 
@@ -42,7 +45,7 @@ The core calculation is **pure and provider-agnostic** — `buildCycle()` in `sr
 
 ### Provider connectors (`src/lib/providers/`)
 
-All connectors implement `ProviderConnector` from `types.ts`. **Real connectors**: OpenRouter (`/api/v1/activity`), OpenAI (Admin API key `sk-admin-…`), Anthropic (Admin key `sk-ant-admin01-…`). Everything else (Gemini, Copilot, Cursor, Groq, hyperscalers, …) is manual/tier-only via `makeManualStub` in `stubs.ts` — `validateKey` always rejects so the UI never offers an API-key path we can't honor. `catalog.ts` is the UI-facing metadata for 30+ providers (dashboard URLs, hints, tier availability). The registry in `index.ts` falls through to a manual stub for unknown ids.
+Users can hold **multiple connections per provider** (migration 0012 dropped the uniqueness constraint; optional `label` names each key/plan) — so inserts, not upserts; `SubscriptionPlans` edits pass `connectionId` to update in place. All connectors implement `ProviderConnector` from `types.ts`. **Real connectors**: OpenRouter (`/api/v1/activity`), OpenAI (Admin API key `sk-admin-…`), Anthropic (Admin key `sk-ant-admin01-…`). Everything else (Gemini, Copilot, Cursor, Groq, hyperscalers, …) is manual/tier-only via `makeManualStub` in `stubs.ts` — `validateKey` always rejects so the UI never offers an API-key path we can't honor. `catalog.ts` is the UI-facing metadata for 30+ providers (dashboard URLs, hints, tier availability). The registry in `index.ts` falls through to a manual stub for unknown ids.
 
 ### Auth & data access
 
@@ -53,7 +56,7 @@ All connectors implement `ProviderConnector` from `types.ts`. **Real connectors*
 
 ### Crons & API routes
 
-- `/api/cron/monthly` (1st, 00:00 UTC) — runs cycles for all onboarded users, sends threshold/recap/quarterly emails. `/api/cron/health-check` (Sun 12:00 UTC) — validates stored API keys, emails on breakage. Both require `Authorization: Bearer $CRON_SECRET` and export `maxDuration = 300`.
+- `/api/cron/monthly` (1st, 00:00 UTC) — finalizes the previous month for all onboarded users, sends threshold/recap/quarterly emails. `/api/cron/daily` (03:00 UTC — keep in sync with `SYNC_HOUR_UTC` in `next-sync-countdown.tsx`) — re-syncs the in-progress month, accrual only, no emails. `/api/cron/health-check` (Sun 12:00 UTC) — validates stored API keys, emails on breakage. All require `Authorization: Bearer $CRON_SECRET` and export `maxDuration = 300`.
 - `/api/email/unsubscribe` — one-click opt-out via HMAC token (`src/lib/unsubscribe.ts`, keyed by `ENCRYPTION_KEY`). All recurring emails carry `List-Unsubscribe` headers.
 - `/api/export` — authenticated CSV export (`?type=usage|estimates|ledger|payments`).
 - `/api/share-card` — public `next/og` image generator for the "Share your impact" dialog; treats all query params as hostile.

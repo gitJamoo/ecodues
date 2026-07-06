@@ -22,6 +22,7 @@ export const DEV_PROFILE = {
   donation_provider: "every_org" as const,
   email_opt_out: false,
   leaderboard_opt_in: true,
+  show_plans_in_sources: false,
 };
 
 export const DEV_ESTIMATES = [

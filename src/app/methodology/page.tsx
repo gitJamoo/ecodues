@@ -2,6 +2,12 @@ import { MODEL_CLASS_PROFILES, PUE, GRID_KG_CO2E_PER_KWH, WATER_L_PER_KWH, SOCIA
 import Link from "next/link";
 import { Logo } from "@/components/logo";
 
+export const metadata = {
+  title: "Methodology · EcoDues",
+  description:
+    "How we estimate the environmental cost of AI inference and translate it into a donation amount. Every constant cited, every formula auditable.",
+};
+
 export default function MethodologyPage() {
   return (
     <div className="min-h-screen bg-white">

@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrig
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { connectApiKey, connectTier, addManualUsage, removeConnection } from "@/lib/actions";
-import { TIER_ESTIMATES } from "@/lib/emissions/tiers";
+import { TIER_ESTIMATES, tierById } from "@/lib/emissions/tiers";
 import { estimateFromTokens, donationForDamage } from "@/lib/emissions/engine";
 import { periodDateString, previousPeriod } from "@/lib/cycle";
 import { parseStatement } from "@/lib/parse-statement";
@@ -20,7 +20,7 @@ import { PROVIDER_CATALOG, featuredProviders, otherProviders, providerById, type
 import { toast } from "sonner";
 import { CheckCircle2, AlertCircle, X, ExternalLink, ClipboardPaste, Info, CalendarDays, Plus, Sparkles } from "lucide-react";
 
-interface Connection { id: string; provider: string; kind: string; tier_id?: string; status: string }
+interface Connection { id: string; provider: string; kind: string; tier_id?: string; status: string; label?: string | null }
 
 // Non-featured provider groupings for the "Add another AI service" dropdown.
 const CATEGORY_LABELS: Record<ProviderCategory, string> = {
@@ -45,6 +45,7 @@ export function ProviderConnect({ connections, periodMode = "current" }: {
 }) {
   const [loading, setLoading] = useState<string | null>(null);
   const [keys, setKeys] = useState<Record<string, string>>({});
+  const [keyLabels, setKeyLabels] = useState<Record<string, string>>({});
   const [tiers, setTiers] = useState<Record<string, string>>({});
   const [tierPct, setTierPct] = useState<Record<string, number>>({});
   const [spend, setSpend] = useState<Record<string, string>>({});
@@ -66,7 +67,7 @@ export function ProviderConnect({ connections, periodMode = "current" }: {
   });
   const [customName, setCustomName] = useState("");
 
-  const connFor = (pid: string) => connections.find(c => c.provider === pid);
+  const connsFor = (pid: string) => connections.filter(c => c.provider === pid);
   const now = new Date();
   const period = periodMode === "previous"
     ? periodDateString(previousPeriod(now))
@@ -80,11 +81,12 @@ export function ProviderConnect({ connections, periodMode = "current" }: {
     const key = keys[pid];
     if (!key) return;
     setLoading(pid + "_key");
-    const res = await connectApiKey(pid as never, key);
+    const res = await connectApiKey(pid as never, key, keyLabels[pid]);
     setLoading(null);
     if ("error" in res && res.error) { toast.error(res.error); return; }
     toast.success(res.isStub ? `${pid} connected (demo data in PoC)` : `${pid} connected`);
     setKeys(k => ({ ...k, [pid]: "" }));
+    setKeyLabels(k => ({ ...k, [pid]: "" }));
     markSaved(pid);
   }
 
@@ -202,8 +204,9 @@ export function ProviderConnect({ connections, periodMode = "current" }: {
         <ProviderCard
           key={meta.id}
           meta={meta}
-          conn={connFor(meta.id)}
+          conns={connsFor(meta.id)}
           keys={keys} setKeys={setKeys}
+          keyLabels={keyLabels} setKeyLabels={setKeyLabels}
           tiers={tiers} setTiers={setTiers}
           tierPct={tierPct} setTierPct={setTierPct}
           spend={spend} setSpend={setSpend}
@@ -226,8 +229,9 @@ export function ProviderConnect({ connections, periodMode = "current" }: {
         <ProviderCard
           key={meta.id}
           meta={meta}
-          conn={connFor(meta.id)}
+          conns={connsFor(meta.id)}
           keys={keys} setKeys={setKeys}
+          keyLabels={keyLabels} setKeyLabels={setKeyLabels}
           tiers={tiers} setTiers={setTiers}
           tierPct={tierPct} setTierPct={setTierPct}
           spend={spend} setSpend={setSpend}
@@ -367,9 +371,11 @@ export function ProviderConnect({ connections, periodMode = "current" }: {
 // ─────────────────────────────────────────────────────────────────────────
 interface ProviderCardProps {
   meta: ProviderMeta;
-  conn: Connection | undefined;
+  conns: Connection[];
   keys: Record<string, string>;
   setKeys: React.Dispatch<React.SetStateAction<Record<string, string>>>;
+  keyLabels: Record<string, string>;
+  setKeyLabels: React.Dispatch<React.SetStateAction<Record<string, string>>>;
   tiers: Record<string, string>;
   setTiers: React.Dispatch<React.SetStateAction<Record<string, string>>>;
   tierPct: Record<string, number>;
@@ -398,7 +404,7 @@ const LOGO_SUPPORTED = new Set(["openai", "anthropic", "openrouter", "gemini"]);
 
 function ProviderCard(props: ProviderCardProps) {
   const {
-    meta, conn, keys, setKeys, tiers, setTiers, tierPct, setTierPct,
+    meta, conns, keys, setKeys, keyLabels, setKeyLabels, tiers, setTiers, tierPct, setTierPct,
     spend, setSpend, inputTok, setInputTok, outputTok, setOutputTok,
     pasteText, setPasteText, parsed, setParsed, loading,
     onApiKey, onTier, onManual, onParse, onPasteSubmit, onRemove,
@@ -409,9 +415,12 @@ function ProviderCard(props: ProviderCardProps) {
   const hasLogo = LOGO_SUPPORTED.has(pid);
   const defaultTab = provTiers.length > 0 ? "tier" : "easy";
 
+  const connName = (c: Connection) =>
+    c.label || (c.kind === "tier" ? (tierById(c.tier_id ?? "")?.label ?? "plan") : c.kind === "api_key" ? "API key" : c.kind);
+
   return (
     <div className={`rounded-xl border p-5 ${meta.color}`}>
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-start justify-between gap-3 mb-4">
         <div className="flex items-center gap-2.5">
           {hasLogo ? (
             <ProviderLogo provider={pid as never} size={28} className="rounded-lg overflow-hidden" />
@@ -424,18 +433,29 @@ function ProviderCard(props: ProviderCardProps) {
             </span>
           )}
           <h3 className="font-medium text-sm">{meta.label}</h3>
-          {conn && (
-            <Badge variant={conn.status === "error" ? "destructive" : "secondary"} className="text-xs">
-              {conn.status === "error"
-                ? <><AlertCircle className="w-3 h-3 mr-1" />Error — reconnect</>
-                : <><CheckCircle2 className="w-3 h-3 mr-1" />{conn.kind}</>}
-            </Badge>
-          )}
         </div>
-        {conn && (
-          <button onClick={() => onRemove(conn.id)} className="text-muted-foreground hover:text-destructive transition-colors">
-            <X className="w-4 h-4" />
-          </button>
+        {/* One badge per connection — a provider can hold several named keys/plans. */}
+        {conns.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 justify-end">
+            {conns.map((c) => (
+              <Badge
+                key={c.id}
+                variant={c.status === "error" ? "destructive" : "secondary"}
+                className="text-xs gap-1"
+              >
+                {c.status === "error"
+                  ? <><AlertCircle className="w-3 h-3" />{connName(c)} — error</>
+                  : <><CheckCircle2 className="w-3 h-3" />{connName(c)}</>}
+                <button
+                  onClick={() => onRemove(c.id)}
+                  className="ml-0.5 opacity-60 hover:opacity-100 transition-opacity"
+                  title={`Remove ${connName(c)}`}
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </Badge>
+            ))}
+          </div>
         )}
       </div>
 
@@ -628,7 +648,14 @@ function ProviderCard(props: ProviderCardProps) {
                 {meta.apiKeyLink.label} <ExternalLink className="w-3 h-3" />
               </a>
             )}
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Input
+                placeholder="Key name (e.g. work, personal)"
+                value={keyLabels[pid] ?? ""}
+                onChange={e => setKeyLabels(k => ({ ...k, [pid]: e.target.value }))}
+                maxLength={64}
+                className="text-sm h-8 sm:max-w-[180px]"
+              />
               <Input
                 type="password"
                 placeholder={`${meta.label} API key`}
@@ -640,6 +667,9 @@ function ProviderCard(props: ProviderCardProps) {
                 {loading === pid + "_key" ? "…" : "Connect"}
               </Button>
             </div>
+            <p className="text-[11px] text-muted-foreground">
+              You can connect as many keys as you like — each is tracked separately on the dashboard.
+            </p>
           </TabsContent>
         )}
       </Tabs>

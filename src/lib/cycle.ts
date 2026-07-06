@@ -28,6 +28,23 @@ export function previousPeriod(now: Date): Period {
   return m === 1 ? { year: y - 1, month: 12 } : { year: y, month: m - 1 };
 }
 
+export function currentPeriod(now: Date): Period {
+  return { year: now.getUTCFullYear(), month: now.getUTCMonth() + 1 };
+}
+
+/**
+ * Fraction of the period's month that has elapsed (UTC). 1 for past months.
+ * Used to prorate subscription-tier estimates when the daily cron settles the
+ * in-progress month, so a monthly plan accrues gradually instead of dumping a
+ * full month's estimate on day 1.
+ */
+export function monthFractionElapsed(period: Period, now: Date): number {
+  const cur = currentPeriod(now);
+  if (period.year !== cur.year || period.month !== cur.month) return 1;
+  const daysInMonth = new Date(Date.UTC(period.year, period.month, 0)).getUTCDate();
+  return Math.min(1, now.getUTCDate() / daysInMonth);
+}
+
 export const periodDateString = (p: Period) =>
   `${p.year}-${String(p.month).padStart(2, "0")}-01`;
 
@@ -50,15 +67,11 @@ export async function runMonthlyCycleForUser(
   period: Period,
 ): Promise<CycleResult> {
   const periodDate = periodDateString(period);
+  const tierFraction = monthFractionElapsed(period, new Date());
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("multiplier, charity_id, pending_donation_usd")
-    .eq("id", userId)
-    .single();
   const { data: connections } = await supabase.from("provider_connections").select("*").eq("user_id", userId);
 
-  // Refresh API + tier usage (manual rows stay)
+  // Refresh API + tier usage (manual and backfill rows stay)
   await supabase.from("usage_records").delete()
     .eq("user_id", userId).eq("period", periodDate).in("source", ["api", "tier_estimate"]);
 
@@ -70,7 +83,7 @@ export async function runMonthlyCycleForUser(
           await supabase.from("usage_records").insert(rows.map(r => ({
             user_id: userId, provider: conn.provider, model: r.model, period: periodDate,
             input_tokens: Math.round(r.inputTokens), output_tokens: Math.round(r.outputTokens),
-            spend_usd: r.spendUsd, source: "api",
+            spend_usd: r.spendUsd, source: "api", connection_id: conn.id,
           })));
         }
         if (conn.status !== "active") {
@@ -86,13 +99,34 @@ export async function runMonthlyCycleForUser(
       if (t) {
         await supabase.from("usage_records").insert({
           user_id: userId, provider: conn.provider, model: t.id, period: periodDate,
-          input_tokens: Math.round(t.monthlyInputTokens * pct),
-          output_tokens: Math.round(t.monthlyOutputTokens * pct),
-          spend_usd: 0, source: "tier_estimate",
+          input_tokens: Math.round(t.monthlyInputTokens * pct * tierFraction),
+          output_tokens: Math.round(t.monthlyOutputTokens * pct * tierFraction),
+          spend_usd: 0, source: "tier_estimate", connection_id: conn.id,
         });
       }
     }
   }
+
+  return settlePeriodForUser(supabase, userId, period);
+}
+
+/**
+ * Recompute a period from whatever usage_records it currently holds — no
+ * connector fetches. Writes emission_estimates, upserts the ledger row, and
+ * moves the tab by the delta. Safe to re-run; used by cycles and by backfill.
+ */
+export async function settlePeriodForUser(
+  supabase: SupabaseClient,
+  userId: string,
+  period: Period,
+): Promise<CycleResult> {
+  const periodDate = periodDateString(period);
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("multiplier, charity_id, pending_donation_usd")
+    .eq("id", userId)
+    .single();
 
   const { data: records } = await supabase.from("usage_records").select("*").eq("user_id", userId).eq("period", periodDate);
   const result = buildCycle((records ?? []) as UsageRecordLike[], Number(profile?.multiplier ?? 2));
