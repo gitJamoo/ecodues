@@ -4,10 +4,14 @@ import { useEffect, useRef } from "react";
 
 export function VideoBackdrop({
   src,
-  scrollLength = "h-[50dvh] sm:h-[75dvh]",
+  scrollLength = "h-[110dvh] sm:h-[120dvh]",
 }: {
   src: string;
-  /** Tailwind height class(es) for the scroll-scrub zone. Defaults to 50dvh mobile / 75dvh desktop. */
+  /**
+   * Tailwind height class(es) for the scroll-scrub zone. The video scrubs
+   * 0→1 across exactly this much scrolling, so the default is "a little more
+   * than one full page" (110dvh mobile / 120dvh desktop).
+   */
   scrollLength?: string;
 }) {
   const videoRef   = useRef<HTMLVideoElement>(null);
@@ -38,10 +42,15 @@ export function VideoBackdrop({
     };
 
     const readProgress = () => {
-      const scrollable = zone.offsetHeight - window.innerHeight;
-      if (scrollable <= 0) return 0;
+      // Scrub begins the moment the zone's top enters the viewport (as the
+      // hero scrolls away) and completes after exactly one zone-height of
+      // scrolling — when the zone's bottom reaches the viewport bottom and
+      // the next section arrives. Unlike the old `offsetHeight -
+      // innerHeight` math, this works for zones shorter than the viewport
+      // (that formula went negative and froze the video at frame 0).
       const rect = zone.getBoundingClientRect();
-      return Math.max(0, Math.min(1, -rect.top / scrollable));
+      if (rect.height <= 0) return 0;
+      return Math.max(0, Math.min(1, (window.innerHeight - rect.top) / rect.height));
     };
 
     const onScroll = () => { target = readProgress(); };
@@ -117,10 +126,9 @@ export function VideoBackdrop({
           style={{ background: "radial-gradient(ellipse at center, transparent 25%, rgba(0,0,0,0.72) 100%)" }}
         />
       </div>
-      {/* Scroll zone — dvh units respect iOS dynamic address bar.
-          Defaults to 50dvh mobile / 75dvh desktop so the Steps section is
-          reached quickly while still giving the video time to play.
-          Override via the scrollLength prop if a longer scrub zone is needed. */}
+      {/* Scroll zone — dvh units respect iOS dynamic address bar. The video
+          scrubs across exactly this height (see readProgress), so this IS
+          the scrub length. Override via the scrollLength prop. */}
       <div ref={zoneRef} className={scrollLength} aria-hidden />
     </>
   );
