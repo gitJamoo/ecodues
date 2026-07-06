@@ -10,6 +10,9 @@ import type { ProviderId } from "@/lib/providers/types";
 import { clampMultiplier } from "@/lib/emissions/engine";
 import { runMonthlyCycleForUser, previousPeriod } from "@/lib/cycle";
 import { DEV_MODE, DEV_USER } from "@/lib/dev-mode";
+import { rateLimit, RATE_LIMITED_ERROR } from "@/lib/rate-limit";
+import { sendEmail, renderWelcomeEmail } from "@/lib/email";
+import { unsubscribeUrl } from "@/lib/unsubscribe";
 
 async function requireUser() {
   if (DEV_MODE) return { supabase: null as never, user: DEV_USER as never };
@@ -25,6 +28,7 @@ export async function connectApiKey(provider: ProviderId, apiKey: string) {
     return { ok: true, isStub: connector.isStub };
   }
   const { supabase, user } = await requireUser();
+  if (!rateLimit(`key:${user.id}`, 10, 60_000)) return { error: RATE_LIMITED_ERROR };
   const connector = connectorFor(provider);
   if (!(await connector.validateKey(apiKey))) {
     return { error: "That key didn't validate. Double-check and try again." };
@@ -56,6 +60,7 @@ export async function addManualUsage(
 ) {
   if (DEV_MODE) return { ok: true };
   const { supabase, user } = await requireUser();
+  if (!rateLimit(`usage:${user.id}`, 20, 60_000)) return { error: RATE_LIMITED_ERROR };
   await supabase.from("usage_records").insert({
     user_id: user.id, provider, model: "manual", period,
     input_tokens: inputTokens, output_tokens: outputTokens,
@@ -79,15 +84,18 @@ export async function saveSettings(form: {
   charityId?: string;
   cardLast4?: string;
   emailOptOut?: boolean;
+  leaderboardOptIn?: boolean;
 }) {
   if (DEV_MODE) return { ok: true };
   const { supabase, user } = await requireUser();
+  if (!rateLimit(`settings:${user.id}`, 30, 60_000)) return { error: RATE_LIMITED_ERROR };
   const patch: Record<string, unknown> = {};
   if (form.displayName !== undefined) patch.display_name = form.displayName;
   if (form.multiplier !== undefined) patch.multiplier = clampMultiplier(form.multiplier);
   if (form.charityId !== undefined) patch.charity_id = form.charityId;
   if (form.cardLast4 !== undefined) patch.card_last4 = form.cardLast4;
   if (form.emailOptOut !== undefined) patch.email_opt_out = form.emailOptOut;
+  if (form.leaderboardOptIn !== undefined) patch.leaderboard_opt_in = form.leaderboardOptIn;
   await supabase.from("profiles").update(patch).eq("id", user.id);
   revalidatePath("/settings");
   revalidatePath("/dashboard");
@@ -109,6 +117,16 @@ export async function completeOnboarding() {
   if (DEV_MODE) return { ok: true, donationUsd: 0 };
   const { supabase, user } = await requireUser();
   await supabase.from("profiles").update({ onboarded_at: new Date().toISOString() }).eq("id", user.id);
+
+  if (user.email) {
+    const { data: profile } = await supabase.from("profiles").select("display_name").eq("id", user.id).single();
+    await sendEmail({
+      to: user.email,
+      ...renderWelcomeEmail({ displayName: profile?.display_name ?? null }),
+      unsubscribeUrl: unsubscribeUrl(user.id),
+    });
+  }
+
   const result = await runMonthlyCycleForUser(supabase, user.id, previousPeriod(new Date()));
   revalidatePath("/dashboard");
   return { ok: true, donationUsd: result.donationUsd };
@@ -142,6 +160,7 @@ export async function logPayment(form: {
   if (DEV_MODE) return { ok: true, amountUsd: amount };
 
   const { supabase, user } = await requireUser();
+  if (!rateLimit(`payment:${user.id}`, 10, 60_000)) return { error: RATE_LIMITED_ERROR };
 
   const { data: profile } = await supabase
     .from("profiles")

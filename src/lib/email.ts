@@ -48,6 +48,66 @@ export async function sendEmail({ to, subject, html, text, unsubscribeUrl }: Sen
   }
 }
 
+export function renderWelcomeEmail(opts: {
+  displayName: string | null;
+}): { subject: string; html: string; text: string } {
+  const name = opts.displayName?.trim() || "there";
+  const subject = "Welcome to EcoDues — your AI footprint, offset";
+
+  const text = [
+    `Hi ${name},`,
+    ``,
+    `Welcome to EcoDues! Here's how it works from here:`,
+    ``,
+    `Each month we tally your AI usage, estimate the climate damage it caused`,
+    `using our published methodology (https://ecodues.app/methodology), and add`,
+    `the offset amount to your tab. When your tab crosses your charity's minimum,`,
+    `we email you a one-click donation link — EcoDues never touches your money.`,
+    ``,
+    `Your first monthly email arrives on the 1st. Until then, connect your AI`,
+    `providers for automatic tracking: https://ecodues.app/providers`,
+    ``,
+    `— EcoDues`,
+  ].join("\n");
+
+  const html = `<!doctype html>
+<html><body style="margin:0;padding:0;background:#f6f7f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#1a1a1a">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding:32px 16px">
+    <tr><td align="center">
+      <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e5e7e5">
+        <tr><td style="padding:32px 32px 24px">
+          <div style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:#5a6b5a;margin-bottom:8px">EcoDues · welcome</div>
+          <h1 style="margin:0 0 12px;font-size:22px;font-weight:600;letter-spacing:-0.01em">Your AI use is about to go net-positive</h1>
+          <p style="margin:0 0 16px;font-size:15px;line-height:1.55;color:#4a5a4a">
+            Hi ${escapeHtml(name)} — welcome to EcoDues. Each month we tally your AI usage,
+            estimate the climate damage it caused using our
+            <a href="https://ecodues.app/methodology" style="color:#1f5a2f">published methodology</a>,
+            and add the offset to your tab.
+          </p>
+          <p style="margin:0 0 20px;font-size:15px;line-height:1.55;color:#4a5a4a">
+            When your tab crosses your charity&rsquo;s minimum, you get a one-click donation
+            link. EcoDues never touches your money &mdash; payments go straight to the
+            nonprofit via PayPal Giving Fund or Every.org.
+          </p>
+
+          <a href="https://ecodues.app/providers" style="display:inline-block;background:#1f5a2f;color:#ffffff;text-decoration:none;font-weight:600;font-size:15px;padding:14px 24px;border-radius:8px">Connect your providers →</a>
+
+          <p style="margin:24px 0 0;font-size:12px;line-height:1.55;color:#7a8a7a">
+            Your first monthly email arrives on the 1st. Connecting providers now means
+            zero manual entry later.
+          </p>
+        </td></tr>
+      </table>
+      <div style="max-width:560px;font-size:11px;color:#9aa89a;margin-top:16px;text-align:center">
+        Sent by EcoDues · offset your AI footprint
+      </div>
+    </td></tr>
+  </table>
+</body></html>`;
+
+  return { subject, html, text };
+}
+
 export function renderDonationEmail(opts: {
   displayName: string | null;
   periodLabel: string;
