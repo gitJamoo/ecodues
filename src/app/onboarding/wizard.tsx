@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { ProviderConnect } from "@/components/provider-connect";
 import { CharityPicker } from "@/components/charity-picker";
 import { MultiplierSlider } from "@/components/multiplier-slider";
@@ -35,11 +36,13 @@ export function OnboardingWizard({ charities }: { charities: Charity[] }) {
   const defaultCharityId = charities.find(isPpgf)?.id ?? charities[0]?.id ?? null;
   const [charityId, setCharityId] = useState<string | null>(defaultCharityId);
   const [multiplier, setMultiplier] = useState(2);
+  const [username, setUsername] = useState("");
   const [finishing, setFinishing] = useState(false);
 
   async function handleStep2Continue() {
+    if (!username.trim()) { toast.error("Pick a username first"); return; }
     if (!charityId) { toast.error("Pick a charity first"); return; }
-    await saveSettings({ charityId, multiplier });
+    await saveSettings({ displayName: username.trim(), charityId, multiplier });
     setStep(2);
   }
 
@@ -82,7 +85,7 @@ export function OnboardingWizard({ charities }: { charities: Charity[] }) {
               <p className="text-sm text-muted-foreground mb-5">
                 No API key needed — you can paste your usage dashboard text, type in last month&apos;s spend, or pick your subscription plan. We&apos;ll handle the math.
               </p>
-              <ProviderConnect connections={[]} />
+              <ProviderConnect connections={[]} periodMode="previous" />
               <Button className="w-full mt-6" onClick={() => setStep(1)}>Continue</Button>
             </>
           )}
@@ -95,6 +98,18 @@ export function OnboardingWizard({ charities }: { charities: Charity[] }) {
                 Not sure? Just pick something — you can change your charity, multiplier, and everything else anytime in Settings.
               </p>
               <div className="space-y-6">
+                <div>
+                  <p className="text-sm font-medium mb-2">Username</p>
+                  <Input
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder="e.g. carbonjames"
+                    maxLength={32}
+                  />
+                  <p className="text-xs text-muted-foreground mt-1.5">
+                    Shown on the leaderboard (if you opt in) and your shareable impact card.
+                  </p>
+                </div>
                 <CharityPicker charities={charities} value={charityId} onChange={setCharityId} />
                 <div>
                   <p className="text-sm font-medium mb-3">Donation multiplier</p>

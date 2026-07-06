@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { LayoutDashboard, Plug, Heart, Trophy, BookOpen, Settings, LogOut } from "lucide-react";
-import { DEV_MODE, DEV_USER } from "@/lib/dev-mode";
+import { LayoutDashboard, Plug, Heart, Trophy, Settings, LogOut } from "lucide-react";
+import { DEV_MODE, DEV_USER, DEV_PROFILE } from "@/lib/dev-mode";
 import { DevBanner } from "@/components/dev-banner";
 import { Logo } from "@/components/logo";
 
@@ -13,19 +13,22 @@ const nav = [
   { href: "/providers",   label: "Providers",   icon: Plug },
   { href: "/donations",   label: "Donations",   icon: Heart },
   { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
-  { href: "/methodology", label: "Methodology", icon: BookOpen },
   { href: "/settings",    label: "Settings",    icon: Settings },
 ];
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   let email: string;
+  let username: string | null;
   if (DEV_MODE) {
     email = DEV_USER.email;
+    username = DEV_PROFILE.display_name;
   } else {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) redirect("/login");
     email = user.email ?? "";
+    const { data: profile } = await supabase.from("profiles").select("display_name").eq("id", user.id).single();
+    username = profile?.display_name ?? null;
   }
 
   return (
@@ -71,6 +74,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           ))}
         </nav>
         <div className="px-3 py-4 border-t border-border">
+          {username && <p className="text-sm font-medium px-3 truncate">{username}</p>}
           <p className="text-xs text-muted-foreground px-3 mb-2 truncate">{email}</p>
           <form action="/auth/signout" method="post">
             <button

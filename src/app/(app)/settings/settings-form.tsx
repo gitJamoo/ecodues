@@ -67,8 +67,9 @@ export function SettingsForm({ profile, charities, totalDamageUsd, tabUsd }: {
   return (
     <div className="space-y-6 bg-card rounded-xl border border-border p-6">
       <div className="space-y-2">
-        <Label>Display name</Label>
-        <Input value={name} onChange={e => setName(e.target.value)} placeholder="Your name" />
+        <Label>Username</Label>
+        <Input value={name} onChange={e => setName(e.target.value)} placeholder="e.g. carbonjames" maxLength={32} />
+        <p className="text-xs text-muted-foreground">Shown on the leaderboard (if opted in), your share card, and the sidebar.</p>
       </div>
 
       <Separator />
