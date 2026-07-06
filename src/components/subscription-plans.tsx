@@ -64,8 +64,10 @@ function PlanRow({ conn }: { conn: TierConnection }) {
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-3 px-4 py-3 border-b border-border last:border-0">
-      <div className="flex items-center gap-2 min-w-[140px]">
+    /* Mobile: stacked (flex-col); Desktop (sm+): single-line wrapped row */
+    <div className="flex flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3 px-4 py-3 border-b border-border last:border-0">
+      {/* Provider name */}
+      <div className="flex items-center gap-2 sm:min-w-[140px]">
         {LOGO_SUPPORTED.has(conn.provider)
           ? <ProviderLogo provider={conn.provider as "openai" | "anthropic" | "openrouter" | "gemini"} size={16} />
           : <span className="inline-flex w-4 h-4 shrink-0 rounded bg-muted-foreground/20" />}
@@ -75,7 +77,8 @@ function PlanRow({ conn }: { conn: TierConnection }) {
         </span>
       </div>
 
-      <div className="w-44">
+      {/* Plan select — full-width on mobile, fixed w-44 on sm+ */}
+      <div className="sm:w-44">
         <Select value={tierId} onValueChange={(v: string | null) => { if (v) setTierId(v); }}>
           <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
           <SelectContent>
@@ -86,26 +89,31 @@ function PlanRow({ conn }: { conn: TierConnection }) {
         </Select>
       </div>
 
-      <div className="flex items-center gap-2 flex-1 min-w-[160px]">
+      {/* Slider + % label */}
+      <div className="flex items-center gap-2 sm:flex-1 sm:min-w-[160px]">
         <Slider value={[pct]} onValueChange={(v: number[]) => setPct(v[0])} min={5} max={100} step={5} />
         <span className="text-xs text-muted-foreground tabular-nums w-14 shrink-0">{pct}% use</span>
       </div>
 
-      {est && (
-        <span className="text-xs text-muted-foreground tabular-nums whitespace-nowrap">
-          ≈ {co2(est.kgCo2e)} · {usd(est.damageUsd)}/mo
-        </span>
-      )}
-
-      <div className="flex items-center gap-1 ml-auto">
-        {dirty && (
-          <Button size="sm" variant="outline" className="h-7 text-xs" onClick={save} disabled={saving}>
-            {saving ? "Saving…" : "Save"}
-          </Button>
+      {/* Estimate text + action buttons.
+          Mobile: one flex row (estimate left, buttons right via ml-auto).
+          Desktop (sm+): sm:contents unwraps children into the parent flex row. */}
+      <div className="flex items-center gap-2 sm:contents">
+        {est && (
+          <span className="flex-1 text-xs text-muted-foreground tabular-nums whitespace-nowrap">
+            ≈ {co2(est.kgCo2e)} · {usd(est.damageUsd)}/mo
+          </span>
         )}
-        <Button size="icon-sm" variant="ghost" className="h-7 w-7 text-muted-foreground" onClick={remove} disabled={removing} title="Remove plan">
-          <X className="w-3.5 h-3.5" />
-        </Button>
+        <div className="flex items-center gap-1 ml-auto sm:ml-auto">
+          {dirty && (
+            <Button size="sm" variant="outline" className="h-7 text-xs" onClick={save} disabled={saving}>
+              {saving ? "Saving…" : "Save"}
+            </Button>
+          )}
+          <Button size="icon-sm" variant="ghost" className="h-7 w-7 text-muted-foreground" onClick={remove} disabled={removing} title="Remove plan">
+            <X className="w-3.5 h-3.5" />
+          </Button>
+        </div>
       </div>
     </div>
   );

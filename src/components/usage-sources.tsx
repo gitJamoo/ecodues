@@ -47,8 +47,9 @@ export function UsageSources({ entries }: { entries: UsageSourceEntry[] }) {
       ) : (
         <div className="rounded-xl border border-border bg-card overflow-hidden">
           {entries.map((e) => (
-            <div key={e.id} className="flex flex-wrap items-center gap-3 px-4 py-3 border-b border-border last:border-0">
-              <div className="flex items-center gap-2.5 min-w-[180px] flex-1">
+            <div key={e.id} className="px-4 py-3 border-b border-border last:border-0">
+              {/* Row 1 on mobile (shared): logo + name + badges; desktop also shows stats inline */}
+              <div className="flex items-center gap-3">
                 {LOGO_SUPPORTED.has(e.provider) ? (
                   <ProviderLogo provider={e.provider as never} size={18} />
                 ) : (
@@ -56,29 +57,36 @@ export function UsageSources({ entries }: { entries: UsageSourceEntry[] }) {
                     {e.providerLabel[0]}
                   </span>
                 )}
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium truncate">
                     {e.providerLabel}
                     <span className="text-muted-foreground font-normal"> · {e.name}</span>
                   </p>
                   <p className="text-[11px] text-muted-foreground">{e.note}</p>
                 </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <Badge variant="outline" className="text-[10px]">{KIND_LABEL[e.kind]}</Badge>
+                  {e.status === "error" && (
+                    <Badge variant="destructive" className="text-[10px]">Sync error</Badge>
+                  )}
+                  {e.isEstimate && e.status !== "error" && (
+                    <Badge variant="secondary" className="text-[10px]">Estimate</Badge>
+                  )}
+                </div>
+                {/* Stats: desktop only — right-aligned fixed columns */}
+                <div className="hidden sm:flex items-center gap-4 shrink-0 text-xs tabular-nums">
+                  <span className="text-muted-foreground w-20 text-right">{co2(e.kgCo2e)}</span>
+                  <span className="w-16 text-right font-medium">{usd(e.damageUsd)}</span>
+                  <span className="text-muted-foreground w-16 text-right">
+                    {e.spendUsd > 0 ? `${usd(e.spendUsd)} spent` : "—"}
+                  </span>
+                </div>
               </div>
-
-              <div className="flex items-center gap-1.5">
-                <Badge variant="outline" className="text-[10px]">{KIND_LABEL[e.kind]}</Badge>
-                {e.status === "error" && (
-                  <Badge variant="destructive" className="text-[10px]">Sync error</Badge>
-                )}
-                {e.isEstimate && e.status !== "error" && (
-                  <Badge variant="secondary" className="text-[10px]">Estimate</Badge>
-                )}
-              </div>
-
-              <div className="flex items-center gap-4 ml-auto text-xs tabular-nums">
-                <span className="text-muted-foreground w-20 text-right">{co2(e.kgCo2e)}</span>
-                <span className="w-16 text-right font-medium">{usd(e.damageUsd)}</span>
-                <span className="text-muted-foreground w-16 text-right">
+              {/* Row 2: stats on mobile only — spread across full width */}
+              <div className="flex items-center justify-between mt-2 sm:hidden text-xs tabular-nums">
+                <span className="text-muted-foreground">{co2(e.kgCo2e)}</span>
+                <span className="font-medium">{usd(e.damageUsd)}</span>
+                <span className="text-muted-foreground">
                   {e.spendUsd > 0 ? `${usd(e.spendUsd)} spent` : "—"}
                 </span>
               </div>

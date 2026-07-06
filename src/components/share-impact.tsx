@@ -78,13 +78,14 @@ export function ShareImpact(props: ShareImpactProps) {
           height={630}
         />
 
-        <div className="flex flex-wrap gap-2">
-          <a href={tweetUrl} target="_blank" rel="noopener noreferrer">
-            <Button size="sm">Post on X</Button>
+        {/* Mobile: stacked full-width; sm+: inline row */}
+        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+          <a href={tweetUrl} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
+            <Button size="sm" className="w-full sm:w-auto">Post on X</Button>
           </a>
-          <Button variant="outline" size="sm" onClick={copyLink}>Copy share link</Button>
-          <a href={relativeUrl} download={`ecodues-${periodLabel.replace(/\s+/g, "-").toLowerCase()}.png`}>
-            <Button variant="outline" size="sm">Download image</Button>
+          <Button variant="outline" size="sm" className="w-full sm:w-auto" onClick={copyLink}>Copy share link</Button>
+          <a href={relativeUrl} download={`ecodues-${periodLabel.replace(/\s+/g, "-").toLowerCase()}.png`} className="w-full sm:w-auto">
+            <Button variant="outline" size="sm" className="w-full sm:w-auto">Download image</Button>
           </a>
         </div>
       </DialogContent>

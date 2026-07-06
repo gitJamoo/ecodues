@@ -35,22 +35,35 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     <div className={`flex min-h-screen bg-muted/30 ${DEV_MODE ? "pt-8" : ""}`}>
       {DEV_MODE && <DevBanner />}
 
-      {/* Mobile top nav — horizontal-scrollable, hidden on sm+ */}
+      {/* Mobile top nav — icons-only so all 5 items fit at 360px; sign-out pinned outside scroll region */}
       <nav className={`sm:hidden fixed ${DEV_MODE ? "top-8" : "top-0"} left-0 right-0 z-20 bg-card border-b border-border`}>
-        <div className="flex items-center gap-1 px-3 py-2 overflow-x-auto">
-          <Link href="/dashboard" className="shrink-0 mr-1">
-            <Logo size={20} />
-          </Link>
-          {nav.map(({ href, label, icon: Icon }) => (
-            <Link
-              key={href}
-              href={href}
-              className="flex items-center gap-1.5 shrink-0 px-2.5 py-1.5 text-xs rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors whitespace-nowrap"
-            >
-              <Icon className="w-3.5 h-3.5" />
-              {label}
+        <div className="flex items-center px-3 py-2 gap-1">
+          {/* Scrollable nav items — overflow-x-auto kept as a safety valve */}
+          <div className="flex items-center gap-1 flex-1 overflow-x-auto">
+            <Link href="/dashboard" className="shrink-0 mr-1">
+              <Logo size={20} />
             </Link>
-          ))}
+            {nav.map(({ href, label, icon: Icon }) => (
+              <Link
+                key={href}
+                href={href}
+                aria-label={label}
+                className="flex items-center shrink-0 p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              >
+                <Icon className="w-4 h-4" />
+              </Link>
+            ))}
+          </div>
+          {/* Sign-out — always visible, outside the scrollable region */}
+          <form action="/auth/signout" method="post" className="shrink-0">
+            <button
+              type="submit"
+              aria-label="Sign out"
+              className="flex items-center p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          </form>
         </div>
       </nav>
 

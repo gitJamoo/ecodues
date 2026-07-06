@@ -69,17 +69,17 @@ export function UsageTable({ usage, multiplier }: { usage: UsageRecord[]; multip
   return (
     <>
       <div className="rounded-xl border border-border overflow-x-auto bg-card">
-        <table className="w-full text-sm min-w-[640px]">
+        <table className="w-full text-sm min-w-[576px] sm:min-w-[640px]">
           <thead>
             <tr className="border-b border-border bg-muted/50">
-              <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Provider</th>
-              <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Model</th>
-              <th className="text-right px-4 py-3 text-xs font-medium text-muted-foreground">Tokens in</th>
-              <th className="text-right px-4 py-3 text-xs font-medium text-muted-foreground">Tokens out</th>
-              <th className="text-right px-4 py-3 text-xs font-medium text-muted-foreground">Spend</th>
-              <th className="text-right px-4 py-3 text-xs font-medium text-muted-foreground">Est. damage</th>
-              <th className="text-right px-4 py-3 text-xs font-medium text-muted-foreground">Donation +</th>
-              <th className="px-4 py-3 text-xs font-medium text-muted-foreground">Source</th>
+              <th className="text-left px-3 py-2.5 sm:px-4 sm:py-3 text-xs font-medium text-muted-foreground">Provider</th>
+              <th className="text-left px-3 py-2.5 sm:px-4 sm:py-3 text-xs font-medium text-muted-foreground">Model</th>
+              <th className="text-right px-3 py-2.5 sm:px-4 sm:py-3 text-xs font-medium text-muted-foreground">Tokens in</th>
+              <th className="text-right px-3 py-2.5 sm:px-4 sm:py-3 text-xs font-medium text-muted-foreground">Tokens out</th>
+              <th className="text-right px-3 py-2.5 sm:px-4 sm:py-3 text-xs font-medium text-muted-foreground">Spend</th>
+              <th className="text-right px-3 py-2.5 sm:px-4 sm:py-3 text-xs font-medium text-muted-foreground">Est. damage</th>
+              <th className="text-right px-3 py-2.5 sm:px-4 sm:py-3 text-xs font-medium text-muted-foreground">Donation +</th>
+              <th className="px-3 py-2.5 sm:px-4 sm:py-3 text-xs font-medium text-muted-foreground">Source</th>
               <th className="w-10" />
             </tr>
           </thead>
@@ -89,17 +89,17 @@ export function UsageTable({ usage, multiplier }: { usage: UsageRecord[]; multip
               const donation = donationForDamage(est.damageUsd, multiplier);
               return (
                 <tr key={u.id} className="border-b border-border last:border-0">
-                  <td className="px-4 py-3 capitalize">{u.provider}</td>
-                  <td className="px-4 py-3 text-muted-foreground font-mono text-xs">{u.model}</td>
-                  <td className="px-4 py-3 text-right tabular-nums text-muted-foreground">{tokens(u.input_tokens)}</td>
-                  <td className="px-4 py-3 text-right tabular-nums text-muted-foreground">{tokens(u.output_tokens)}</td>
-                  <td className="px-4 py-3 text-right tabular-nums">{usd(Number(u.spend_usd))}</td>
-                  <td className="px-4 py-3 text-right tabular-nums text-muted-foreground">{usd(est.damageUsd)}</td>
-                  <td className="px-4 py-3 text-right tabular-nums text-primary font-medium">{usd(donation)}</td>
-                  <td className="px-4 py-3">
+                  <td className="px-3 py-2.5 sm:px-4 sm:py-3 capitalize">{u.provider}</td>
+                  <td className="px-3 py-2.5 sm:px-4 sm:py-3 text-muted-foreground font-mono text-xs">{u.model}</td>
+                  <td className="px-3 py-2.5 sm:px-4 sm:py-3 text-right tabular-nums text-muted-foreground">{tokens(u.input_tokens)}</td>
+                  <td className="px-3 py-2.5 sm:px-4 sm:py-3 text-right tabular-nums text-muted-foreground">{tokens(u.output_tokens)}</td>
+                  <td className="px-3 py-2.5 sm:px-4 sm:py-3 text-right tabular-nums">{usd(Number(u.spend_usd))}</td>
+                  <td className="px-3 py-2.5 sm:px-4 sm:py-3 text-right tabular-nums text-muted-foreground">{usd(est.damageUsd)}</td>
+                  <td className="px-3 py-2.5 sm:px-4 sm:py-3 text-right tabular-nums text-primary font-medium">{usd(donation)}</td>
+                  <td className="px-3 py-2.5 sm:px-4 sm:py-3">
                     <Badge variant="secondary" className="text-[10px]">{u.source}</Badge>
                   </td>
-                  <td className="px-2 py-3 text-right">
+                  <td className="px-2 py-2.5 sm:py-3 text-right">
                     <button
                       onClick={() => openEdit(u)}
                       className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
