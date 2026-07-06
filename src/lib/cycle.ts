@@ -6,6 +6,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { connectorFor } from "./providers";
 import { tierById } from "./emissions/tiers";
 import { decryptSecret } from "./crypto";
+import { logger } from "./logger";
 
 export interface UsageRecordLike {
   id: string;
@@ -89,7 +90,11 @@ export async function runMonthlyCycleForUser(
         if (conn.status !== "active") {
           await supabase.from("provider_connections").update({ status: "active" }).eq("id", conn.id);
         }
-      } catch {
+      } catch (err) {
+        logger.error("cycle", "connector usage fetch failed", {
+          userId, provider: conn.provider, connectionId: conn.id,
+          rawError: err instanceof Error ? err.message : String(err),
+        });
         await supabase.from("provider_connections").update({ status: "error" }).eq("id", conn.id);
       }
     } else if (conn.kind === "tier" && conn.tier_id) {
