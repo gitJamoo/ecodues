@@ -26,7 +26,7 @@ interface ShareImpactProps {
 export function ShareImpact(props: ShareImpactProps) {
   const { periodLabel, kgCo2e, kwh, damageUsd, donationUsd, multiplier, displayName } = props;
 
-  const { relativeUrl, shareUrl, tweetUrl } = useMemo(() => {
+  const { relativeUrl, shareUrl } = useMemo(() => {
     const params = new URLSearchParams({
       period: periodLabel,
       kg: kgCo2e.toFixed(3),
@@ -38,12 +38,10 @@ export function ShareImpact(props: ShareImpactProps) {
     if (displayName?.trim()) params.set("name", displayName.trim());
     const relativeUrl = `/api/share-card?${params.toString()}`;
     const base = process.env.NEXT_PUBLIC_SITE_URL ?? "https://ecodues.app";
-    // X and LinkedIn can't attach a raw image URL — they render the card
+    // Social platforms can't attach a raw image URL — they render the card
     // from the og/twitter metadata of an HTML page, so share /share.
     const shareUrl = `${base}/share?${params.toString()}`;
-    const text = `My AI usage caused ${kgCo2e.toFixed(2)} kg of CO₂e (${periodLabel}) — and I'm offsetting it. Track yours at ecodues.app`;
-    const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`;
-    return { relativeUrl, shareUrl, tweetUrl };
+    return { relativeUrl, shareUrl };
   }, [periodLabel, kgCo2e, kwh, damageUsd, donationUsd, multiplier, displayName]);
 
   async function copyLink() {
@@ -65,7 +63,7 @@ export function ShareImpact(props: ShareImpactProps) {
         <DialogHeader>
           <DialogTitle>Share your impact</DialogTitle>
           <DialogDescription>
-            A snapshot of your AI footprint and the offset you&apos;re making — ready for X, LinkedIn, or anywhere else.
+            A snapshot of your AI footprint and the offset you&apos;re making. Copy the link to share it anywhere, or download the image.
           </DialogDescription>
         </DialogHeader>
 
@@ -79,13 +77,10 @@ export function ShareImpact(props: ShareImpactProps) {
         />
 
         <div className="flex flex-wrap gap-2">
-          <a href={tweetUrl} target="_blank" rel="noopener noreferrer">
-            <Button size="sm">Post on X</Button>
-          </a>
+          <Button size="sm" onClick={copyLink}>Copy share link</Button>
           <a href={relativeUrl} download={`ecodues-${periodLabel.replace(/\s+/g, "-").toLowerCase()}.png`}>
             <Button variant="outline" size="sm">Download image</Button>
           </a>
-          <Button variant="outline" size="sm" onClick={copyLink}>Copy share link</Button>
         </div>
       </DialogContent>
     </Dialog>
