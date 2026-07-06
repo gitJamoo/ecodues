@@ -2,6 +2,8 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ExternalLink } from "lucide-react";
 import { VideoBackdrop } from "@/components/video-backdrop";
+import { Logo } from "@/components/logo";
+import { SiteFooter } from "@/components/site-footer";
 
 function GithubIcon({ className }: { className?: string }) {
   return (
@@ -13,7 +15,38 @@ function GithubIcon({ className }: { className?: string }) {
 
 export default function Home() {
   return (
-    <div className="text-white overflow-x-hidden">
+    <div className="min-h-screen text-white overflow-x-hidden">
+      {/* Nav — this page lives outside the (marketing) group on purpose: its
+          content is always white-over-video, so it keeps the original
+          always-dark header instead of the theme-aware SiteNav (which turns
+          white in light mode and clashes with the hero). */}
+      <nav className="border-b border-white/10 px-4 sm:px-6 py-4 flex items-center justify-between max-w-6xl mx-auto">
+        <Logo size={26} />
+        <div className="flex items-center gap-3 sm:gap-6 text-sm text-white/70">
+          <Link
+            href="#about"
+            className="hover:text-white transition-colors hidden sm:block"
+          >
+            About
+          </Link>
+          <Link
+            href="/methodology"
+            className="hover:text-white transition-colors hidden sm:block"
+          >
+            Methodology
+          </Link>
+          <Link href="/login">
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-white/20 text-white hover:bg-white/10 bg-transparent"
+            >
+              Sign in
+            </Button>
+          </Link>
+        </div>
+      </nav>
+
       {/* Hero — video frozen at first frame here */}
       <main className="max-w-3xl mx-auto px-6 pt-20 pb-20 text-center">
         <h1 className="text-3xl sm:text-5xl font-semibold tracking-tight leading-tight mb-6 text-white">
@@ -160,6 +193,10 @@ export default function Home() {
           </a>
         </div>
       </section>
+
+      {/* Shared footer, rendered directly since this page skips the
+          (marketing) layout */}
+      <SiteFooter />
     </div>
   );
 }
