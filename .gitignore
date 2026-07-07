@@ -43,6 +43,9 @@ yarn-error.log*
 # local notes not meant for the public site
 /public/video_prompt
 
+# launch video workspace (Remotion project + assets, not part of the app)
+/marketing-video/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
