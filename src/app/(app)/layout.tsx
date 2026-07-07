@@ -5,6 +5,7 @@ import { LayoutDashboard, Plug, Heart, Trophy, Settings, LogOut } from "lucide-r
 import { DEV_MODE, DEV_USER, DEV_PROFILE } from "@/lib/dev-mode";
 import { DevBanner } from "@/components/dev-banner";
 import { Logo } from "@/components/logo";
+import { UserAvatar } from "@/components/user-avatar";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +20,7 @@ const nav = [
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   let email: string;
   let username: string | null;
+  let avatarUrl: string | null = null;
   if (DEV_MODE) {
     email = DEV_USER.email;
     username = DEV_PROFILE.display_name;
@@ -27,6 +29,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) redirect("/login");
     email = user.email ?? "";
+    // OAuth providers (GitHub) supply a profile photo in user_metadata.
+    const meta = user.user_metadata as { avatar_url?: string; picture?: string } | null;
+    avatarUrl = meta?.avatar_url ?? meta?.picture ?? null;
     const { data: profile } = await supabase.from("profiles").select("display_name").eq("id", user.id).single();
     username = profile?.display_name ?? null;
   }
@@ -54,7 +59,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
               </Link>
             ))}
           </div>
-          {/* Sign-out — always visible, outside the scrollable region */}
+          {/* Avatar → settings; sign-out — both pinned outside the scroll region */}
+          <Link href="/settings" aria-label="Your settings" className="shrink-0 ml-1">
+            <UserAvatar avatarUrl={avatarUrl} name={username ?? email} size={26} />
+          </Link>
           <form action="/auth/signout" method="post" className="shrink-0">
             <button
               type="submit"
@@ -87,8 +95,13 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           ))}
         </nav>
         <div className="px-3 py-4 border-t border-border">
-          {username && <p className="text-sm font-medium px-3 truncate">{username}</p>}
-          <p className="text-xs text-muted-foreground px-3 mb-2 truncate">{email}</p>
+          <div className="flex items-center gap-2.5 px-3 mb-2">
+            <UserAvatar avatarUrl={avatarUrl} name={username ?? email} size={32} />
+            <div className="min-w-0">
+              {username && <p className="text-sm font-medium truncate">{username}</p>}
+              <p className="text-xs text-muted-foreground truncate">{email}</p>
+            </div>
+          </div>
           <form action="/auth/signout" method="post">
             <button
               type="submit"
@@ -101,8 +114,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         </div>
       </aside>
 
-      {/* Main — full width on mobile, offset by sidebar on sm+ */}
-      <main className="sm:ml-56 flex-1 px-4 sm:px-8 pb-10 pt-14 sm:pt-10 max-w-5xl">
+      {/* Main — full width on mobile, offset by sidebar on sm+.
+          min-w-0 stops flex min-width:auto from letting wide children push
+          the page past the viewport; overflow-x-clip is the backstop. */}
+      <main className="sm:ml-56 flex-1 min-w-0 overflow-x-clip px-4 sm:px-8 pb-10 pt-14 sm:pt-10 max-w-5xl">
         {children}
       </main>
     </div>

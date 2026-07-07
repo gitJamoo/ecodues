@@ -168,7 +168,7 @@ export default async function DashboardPage() {
           <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
           <p className="text-sm text-muted-foreground mt-0.5">Your AI inference footprint and offset</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {showShare && (
             <ShareImpact
               periodLabel={share.label}
@@ -272,14 +272,15 @@ export default async function DashboardPage() {
           {periods.length > 0 && (
             <div>
               <h2 className="text-sm font-medium mb-3">By period</h2>
-              <div className="rounded-xl border border-border overflow-x-auto bg-card">
-                <table className="w-full text-sm min-w-[340px]">
+              {/* 4 slim columns — fits a 360px viewport with tighter mobile padding */}
+              <div className="rounded-xl border border-border bg-card">
+                <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-border bg-muted/50">
-                      <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Month</th>
-                      <th className="text-right px-4 py-3 text-xs font-medium text-muted-foreground">CO₂e</th>
-                      <th className="text-right px-4 py-3 text-xs font-medium text-muted-foreground">Damage</th>
-                      <th className="text-right px-4 py-3 text-xs font-medium text-muted-foreground">Donation</th>
+                      <th className="text-left px-2.5 py-2.5 sm:px-4 sm:py-3 text-xs font-medium text-muted-foreground">Month</th>
+                      <th className="text-right px-2.5 py-2.5 sm:px-4 sm:py-3 text-xs font-medium text-muted-foreground">CO₂e</th>
+                      <th className="text-right px-2.5 py-2.5 sm:px-4 sm:py-3 text-xs font-medium text-muted-foreground">Damage</th>
+                      <th className="text-right px-2.5 py-2.5 sm:px-4 sm:py-3 text-xs font-medium text-muted-foreground">Donation</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -287,11 +288,11 @@ export default async function DashboardPage() {
                       const pe = (estimates as EstimateRow[]).filter(e => e.period === period);
                       const pl = (ledger as LedgerRow[]).find(l => l.period === period);
                       return (
-                        <tr key={period} className="border-b border-border last:border-0">
-                          <td className="px-4 py-3 text-muted-foreground">{monthLabel(period)}</td>
-                          <td className="px-4 py-3 text-right tabular-nums">{co2(pe.reduce((s, e) => s + Number(e.kg_co2e), 0))}</td>
-                          <td className="px-4 py-3 text-right tabular-nums">{usd(pe.reduce((s, e) => s + Number(e.damage_usd), 0))}</td>
-                          <td className="px-4 py-3 text-right tabular-nums text-primary">{pl ? usd(Number(pl.donation_usd)) : "—"}</td>
+                        <tr key={period} className="border-b border-border last:border-0 text-xs sm:text-sm">
+                          <td className="px-2.5 py-2.5 sm:px-4 sm:py-3 text-muted-foreground whitespace-nowrap">{monthLabel(period)}</td>
+                          <td className="px-2.5 py-2.5 sm:px-4 sm:py-3 text-right tabular-nums">{co2(pe.reduce((s, e) => s + Number(e.kg_co2e), 0))}</td>
+                          <td className="px-2.5 py-2.5 sm:px-4 sm:py-3 text-right tabular-nums">{usd(pe.reduce((s, e) => s + Number(e.damage_usd), 0))}</td>
+                          <td className="px-2.5 py-2.5 sm:px-4 sm:py-3 text-right tabular-nums text-primary">{pl ? usd(Number(pl.donation_usd)) : "—"}</td>
                         </tr>
                       );
                     })}
@@ -305,7 +306,32 @@ export default async function DashboardPage() {
           {ledger.length > 0 ? (
             <div>
               <h2 className="text-sm font-medium mb-3">Payment history</h2>
-              <div className="rounded-xl border border-border overflow-x-auto bg-card">
+
+              {/* Mobile: stacked cards — no horizontal scroll */}
+              <div className="sm:hidden space-y-2">
+                {(ledger as LedgerRow[]).map((l) => {
+                  const charity = charities.find((c: { id: string }) => c.id === l.charity_id);
+                  return (
+                    <div key={l.id} className="rounded-xl border border-border bg-card p-3 space-y-1.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-sm font-medium">{monthLabel(l.period)}</span>
+                        {l.status === "paid"           && <Badge className="text-[10px] bg-primary/10 text-primary border-primary/20">Paid ✓</Badge>}
+                        {l.status === "partially_paid" && <Badge variant="outline" className="text-[10px] text-primary border-primary/40">Partially paid</Badge>}
+                        {l.status === "accrued"        && <Badge variant="outline" className="text-[10px] text-amber-600 border-amber-300 dark:text-amber-400 dark:border-amber-700">On tab</Badge>}
+                        {l.status === "simulated"      && <Badge variant="secondary" className="text-[10px]">Simulated</Badge>}
+                      </div>
+                      <div className="flex items-center justify-between text-xs tabular-nums">
+                        <span className="text-muted-foreground">{usd(Number(l.damage_usd))} × {Number(l.multiplier ?? multiplier).toFixed(2)}</span>
+                        <span className="font-medium text-primary">{usd(Number(l.donation_usd))}</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground truncate">{charity?.name ?? l.charities?.name ?? "—"}</p>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Desktop: full table */}
+              <div className="hidden sm:block rounded-xl border border-border overflow-x-auto bg-card">
                 <table className="w-full text-sm min-w-[540px]">
                   <thead>
                     <tr className="border-b border-border bg-muted/50">

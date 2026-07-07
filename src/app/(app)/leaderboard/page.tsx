@@ -1,6 +1,7 @@
 import { getLeaderboardData } from "@/lib/data";
 import { usd } from "@/lib/format";
 import { Trophy } from "lucide-react";
+import { UserAvatar } from "@/components/user-avatar";
 
 export default async function LeaderboardPage() {
   const { leaderboard, charityTotals } = await getLeaderboardData();
@@ -43,7 +44,12 @@ export default async function LeaderboardPage() {
                       {row.rank}
                     </span>
                   </td>
-                  <td className="px-4 py-3 font-medium">{row.display_name}</td>
+                  <td className="px-4 py-3 font-medium">
+                    <span className="inline-flex items-center gap-2">
+                      <UserAvatar name={row.display_name} size={24} />
+                      {row.display_name}
+                    </span>
+                  </td>
                   <td className="px-4 py-3 text-right tabular-nums text-primary font-medium">{usd(Number(row.total_donated))}</td>
                   <td className="px-4 py-3 text-right tabular-nums text-muted-foreground">{row.donation_count}</td>
                 </tr>

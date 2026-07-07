@@ -68,8 +68,40 @@ export function UsageTable({ usage, multiplier }: { usage: UsageRecord[]; multip
 
   return (
     <>
-      <div className="rounded-xl border border-border overflow-x-auto bg-card">
-        <table className="w-full text-sm min-w-[576px] sm:min-w-[640px]">
+      {/* Mobile: stacked record cards — no horizontal scroll */}
+      <div className="sm:hidden space-y-2">
+        {usage.slice(0, 20).map((u) => {
+          const est = rowEmissions(u);
+          const donation = donationForDamage(est.damageUsd, multiplier);
+          return (
+            <div key={u.id} className="rounded-xl border border-border bg-card p-3 space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium capitalize flex-1 min-w-0 truncate">{u.provider}</span>
+                <Badge variant="secondary" className="text-[10px] shrink-0">{u.source}</Badge>
+                <button
+                  onClick={() => openEdit(u)}
+                  className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0"
+                  aria-label="Edit record"
+                >
+                  <PencilIcon className="w-3.5 h-3.5" />
+                </button>
+              </div>
+              <p className="text-xs font-mono text-muted-foreground truncate">{u.model}</p>
+              <div className="grid grid-cols-3 gap-x-2 gap-y-1 text-xs tabular-nums">
+                <span className="text-muted-foreground">{tokens(u.input_tokens)} in</span>
+                <span className="text-muted-foreground">{tokens(u.output_tokens)} out</span>
+                <span className="text-right">{usd(Number(u.spend_usd))} spent</span>
+                <span className="text-muted-foreground col-span-2">{usd(est.damageUsd)} damage</span>
+                <span className="text-right text-primary font-medium">+{usd(donation)}</span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Desktop: full table */}
+      <div className="hidden sm:block rounded-xl border border-border overflow-x-auto bg-card">
+        <table className="w-full text-sm min-w-[640px]">
           <thead>
             <tr className="border-b border-border bg-muted/50">
               <th className="text-left px-3 py-2.5 sm:px-4 sm:py-3 text-xs font-medium text-muted-foreground">Provider</th>

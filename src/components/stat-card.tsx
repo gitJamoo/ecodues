@@ -30,7 +30,7 @@ export function StatCard({ label, value, sub, accent, info }: StatCardProps) {
             </button>
           )}
         </div>
-        <p className={`text-3xl font-semibold tabular-nums ${accent ? "text-primary" : ""}`}>{value}</p>
+        <p className={`text-2xl sm:text-3xl font-semibold tabular-nums break-words ${accent ? "text-primary" : ""}`}>{value}</p>
         {sub && <p className="text-xs text-muted-foreground mt-1">{sub}</p>}
         {info && showInfo && (
           <div className="mt-3 pt-3 border-t border-border space-y-1">
