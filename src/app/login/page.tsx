@@ -163,15 +163,14 @@ export default function LoginPage() {
               <GithubIcon />
               {oauthLoading === "github" ? "Redirecting…" : "Continue with GitHub"}
             </Button>
-            {/* Google OAuth not configured yet — re-enable once the Google Cloud OAuth app is registered */}
             <Button
               variant="outline"
-              className="w-full opacity-50 cursor-not-allowed grayscale"
-              disabled
-              title="Google sign-in is coming soon"
+              className="w-full"
+              onClick={() => signInWithOAuth("google")}
+              disabled={oauthLoading !== null}
             >
               <GoogleIcon />
-              Google sign-in coming soon
+              {oauthLoading === "google" ? "Redirecting…" : "Continue with Google"}
             </Button>
           </div>
 

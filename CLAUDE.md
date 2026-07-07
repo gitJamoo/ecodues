@@ -78,5 +78,4 @@ Tables: `charities`, `profiles`, `provider_connections`, `usage_records`, `emiss
 ### Production swap points
 
 - **Every.org Partner API**: when partner keys arrive, wire `createCheckout()` in `src/lib/every-org.ts` into the cron email path and set `EVERY_ORG_WEBHOOK_TOKEN` to activate the webhook.
-- **Google OAuth**: the login button is disabled ("coming soon") — register the Google Cloud OAuth app, add credentials in the Supabase dashboard, then re-enable the button in `src/app/login/page.tsx`.
 - **Real provider connectors**: add new files following the `openrouter.ts` / `anthropic.ts` pattern and register in `src/lib/providers/index.ts`.
