@@ -21,10 +21,11 @@ interface ShareImpactProps {
   donationUsd: number;
   multiplier: number;
   displayName?: string | null;
+  avatarUrl?: string | null;
 }
 
 export function ShareImpact(props: ShareImpactProps) {
-  const { periodLabel, kgCo2e, kwh, damageUsd, donationUsd, multiplier, displayName } = props;
+  const { periodLabel, kgCo2e, kwh, damageUsd, donationUsd, multiplier, displayName, avatarUrl } = props;
 
   const { relativeUrl, shareUrl, tweetUrl } = useMemo(() => {
     const params = new URLSearchParams({
@@ -36,6 +37,7 @@ export function ShareImpact(props: ShareImpactProps) {
       mult: multiplier.toFixed(1),
     });
     if (displayName?.trim()) params.set("name", displayName.trim());
+    if (avatarUrl) params.set("avatar", avatarUrl);
     const relativeUrl = `/api/share-card?${params.toString()}`;
     const base = process.env.NEXT_PUBLIC_SITE_URL ?? "https://ecodues.org";
     // Social platforms can't attach a raw image URL — they render the card
@@ -44,7 +46,7 @@ export function ShareImpact(props: ShareImpactProps) {
     const text = `My AI usage caused ${kgCo2e.toFixed(2)} kg of CO₂e (${periodLabel}) — and I'm offsetting it. Track yours at ecodues.org`;
     const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`;
     return { relativeUrl, shareUrl, tweetUrl };
-  }, [periodLabel, kgCo2e, kwh, damageUsd, donationUsd, multiplier, displayName]);
+  }, [periodLabel, kgCo2e, kwh, damageUsd, donationUsd, multiplier, displayName, avatarUrl]);
 
   async function copyLink() {
     try {

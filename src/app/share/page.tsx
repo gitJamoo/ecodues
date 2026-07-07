@@ -12,6 +12,17 @@ const num = (v: string | undefined, max: number) => {
 const str = (v: string | undefined, maxLen: number) =>
   (v ?? "").replace(/[^\p{L}\p{N} .,'&()-]/gu, "").slice(0, maxLen);
 
+// Only allow HTTPS avatars from GitHub or Google OAuth CDNs (mirrors share-card route).
+const parseAvatar = (v: string | undefined): string | null => {
+  if (!v || v.length > 512) return null;
+  try {
+    const u = new URL(v);
+    if (u.protocol !== "https:") return null;
+    if (u.hostname !== "avatars.githubusercontent.com" && !/^lh\d\.googleusercontent\.com$/.test(u.hostname)) return null;
+    return u.toString();
+  } catch { return null; }
+};
+
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
 const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
@@ -21,6 +32,7 @@ function parseCard(sp: Record<string, string | string[] | undefined>) {
   const name = str(first(sp.name), 32);
   const kg = num(first(sp.kg), 1_000_000);
   const mult = num(first(sp.mult), 100);
+  const validAvatar = parseAvatar(first(sp.avatar));
 
   const params = new URLSearchParams({
     period,
@@ -31,6 +43,7 @@ function parseCard(sp: Record<string, string | string[] | undefined>) {
     mult: String(mult),
   });
   if (name) params.set("name", name);
+  if (validAvatar) params.set("avatar", validAvatar);
 
   return { period, name, kg, mult, imageUrl: `/api/share-card?${params.toString()}` };
 }

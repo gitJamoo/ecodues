@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
 import { getDashboardData, getConnections } from "@/lib/data";
+import { DEV_MODE } from "@/lib/dev-mode";
+import { createClient } from "@/lib/supabase/server";
 import { tierById } from "@/lib/emissions/tiers";
 import { StatCard } from "@/components/stat-card";
 import { RunCycleButton } from "@/components/run-cycle-button";
@@ -38,6 +40,18 @@ function liveStatsFrom(rows: UsageRow[]) {
 export default async function DashboardPage() {
   const { profile, estimates, ledger, usage, charities } = await getDashboardData();
   if (!profile?.onboarded_at) redirect("/onboarding");
+
+  // Obtain the OAuth avatar URL (GitHub avatar_url / Google picture) for the share card.
+  // Mirror the pattern used in (app)/layout.tsx — skip in DEV_MODE.
+  let avatarUrl: string | null = null;
+  if (!DEV_MODE) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const meta = user.user_metadata as { avatar_url?: string; picture?: string } | null;
+      avatarUrl = meta?.avatar_url ?? meta?.picture ?? null;
+    }
+  }
 
   const multiplier   = Number(profile.multiplier ?? 2);
   const selectedCharity = charities.find((c: { id: string }) => c.id === profile?.charity_id) ?? null;
@@ -178,6 +192,7 @@ export default async function DashboardPage() {
               donationUsd={share.donation}
               multiplier={multiplier}
               displayName={(profile as { display_name?: string | null }).display_name}
+              avatarUrl={avatarUrl}
             />
           )}
           <Link href="/settings">

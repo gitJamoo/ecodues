@@ -12,6 +12,17 @@ const num = (v: string | null, max: number) => {
 const str = (v: string | null, maxLen: number) =>
   (v ?? "").replace(/[^\p{L}\p{N} .,'&()-]/gu, "").slice(0, maxLen);
 
+// Only allow HTTPS avatars from GitHub or Google OAuth CDNs.
+const parseAvatar = (v: string | null): string | null => {
+  if (!v || v.length > 512) return null;
+  try {
+    const u = new URL(v);
+    if (u.protocol !== "https:") return null;
+    if (u.hostname !== "avatars.githubusercontent.com" && !/^lh\d\.googleusercontent\.com$/.test(u.hostname)) return null;
+    return u.toString();
+  } catch { return null; }
+};
+
 const fmt = (n: number, digits = 1) =>
   n >= 100 ? Math.round(n).toLocaleString("en-US") : n.toFixed(digits);
 
@@ -24,6 +35,7 @@ export async function GET(req: NextRequest) {
   const damage = num(q.get("damage"), 1_000_000);
   const donated = num(q.get("donated"), 1_000_000);
   const mult = num(q.get("mult"), 100);
+  const avatar = parseAvatar(q.get("avatar"));
 
   const stat = (label: string, value: string) => (
     <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -56,8 +68,14 @@ export async function GET(req: NextRequest) {
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          <div style={{ display: "flex", fontSize: 26, color: "#9fbf9f" }}>
-            {name ? `${name}'s AI footprint` : "My AI footprint"}
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            {avatar ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={avatar} width={48} height={48} alt="" style={{ display: "flex", borderRadius: "50%", border: "2px solid #5fd07f33" }} />
+            ) : null}
+            <div style={{ display: "flex", fontSize: 26, color: "#9fbf9f" }}>
+              {name ? `${name}'s AI footprint` : "My AI footprint"}
+            </div>
           </div>
           <div style={{ display: "flex", alignItems: "baseline", gap: 18 }}>
             <div style={{ display: "flex", fontSize: 130, fontWeight: 800, color: "#5fd07f", letterSpacing: -4 }}>
