@@ -22,6 +22,9 @@ export function SiteFooter() {
           <Link href="/methodology" className="hover:text-foreground transition-colors">
             Methodology
           </Link>
+          <Link href="/impact" className="hover:text-foreground transition-colors">
+            Impact
+          </Link>
           <Link href="/how-donations-work" className="hover:text-foreground transition-colors">
             How donations work
           </Link>

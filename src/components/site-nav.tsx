@@ -17,6 +17,12 @@ export function SiteNav() {
             About
           </Link>
           <Link
+            href="/impact"
+            className="hover:text-foreground transition-colors hidden sm:block"
+          >
+            Impact
+          </Link>
+          <Link
             href="/methodology"
             className="hover:text-foreground transition-colors hidden sm:block"
           >

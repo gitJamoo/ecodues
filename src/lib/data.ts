@@ -2,6 +2,20 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { DEV_MODE, DEV_USER, DEV_PROFILE, DEV_CHARITIES, DEV_ESTIMATES, DEV_LEDGER, DEV_PAYMENTS, DEV_USAGE, DEV_LEADERBOARD, DEV_CHARITY_TOTALS } from "@/lib/dev-mode";
 
+export async function getImpactData() {
+  if (DEV_MODE) {
+    const totalDonated = DEV_CHARITY_TOTALS.reduce((s, c) => s + c.total_donated, 0);
+    const charitiesWithDonations = DEV_CHARITY_TOTALS.filter((c) => c.total_donated > 0).length;
+    return { totalDonated, charityCount: charitiesWithDonations, charityTotals: DEV_CHARITY_TOTALS };
+  }
+  const supabase = await createClient();
+  const { data: charityTotals } = await supabase.rpc("get_charity_totals");
+  const totals = (charityTotals ?? []) as { charity_id: string; charity_name: string; total_donated: number; donor_count: number }[];
+  const totalDonated = totals.reduce((s, c) => s + Number(c.total_donated), 0);
+  const charityCount = totals.filter((c) => Number(c.total_donated) > 0).length;
+  return { totalDonated, charityCount, charityTotals: totals };
+}
+
 export async function getSessionUser() {
   if (DEV_MODE) return { supabase: null as never, user: DEV_USER as never };
   const supabase = await createClient();
