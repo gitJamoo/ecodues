@@ -7,6 +7,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "/", priority: 1 },
     { path: "/methodology", priority: 0.8 },
     { path: "/how-donations-work", priority: 0.8 },
+    { path: "/impact", priority: 0.7 },
     { path: "/login", priority: 0.5 },
     { path: "/privacy", priority: 0.3 },
     { path: "/terms", priority: 0.3 },

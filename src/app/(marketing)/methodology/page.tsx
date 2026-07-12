@@ -6,9 +6,28 @@ export const metadata = {
     "How we estimate the environmental cost of AI inference and translate it into a donation amount. Every constant cited, every formula auditable.",
 };
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://ecodues.org";
+
+const JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  headline: "How EcoDues estimates the environmental cost of AI inference",
+  description: metadata.description,
+  url: `${SITE_URL}/methodology`,
+  version: METHODOLOGY_VERSION,
+  author: { "@id": `${SITE_URL}/#organization` },
+  publisher: { "@id": `${SITE_URL}/#organization` },
+  isPartOf: { "@id": `${SITE_URL}/#website` },
+  abstract: `Formula: kWh = (output_tokens + input_tokens × ${INPUT_TOKEN_ENERGY_FRACTION}) × Wh/token × PUE ${PUE} / 1000; kg CO₂e = kWh × ${GRID_KG_CO2E_PER_KWH}; liters H₂O = kWh × ${WATER_L_PER_KWH}; damage USD = tons CO₂e × $${SOCIAL_COST_USD_PER_TON_CO2E} (EPA 2023 social cost of carbon).`,
+};
+
 export default function MethodologyPage() {
   return (
     <div className="min-h-screen bg-background">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}
+      />
       <main className="max-w-3xl mx-auto px-6 py-16 space-y-10">
         <div>
           <div className="inline-flex items-center gap-2 rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground mb-4">

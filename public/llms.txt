@@ -1,0 +1,33 @@
+# EcoDues
+
+> EcoDues (https://ecodues.org) is a free, open-source web app that helps people offset the climate damage of their AI usage. It tallies monthly AI usage across providers (OpenAI, Anthropic, OpenRouter, ChatGPT Plus, Claude Pro, Copilot, Cursor, and 30+ more), estimates the energy, CO₂e, water, and social cost of that inference using a fully cited methodology, and nudges users to donate the damage — at a multiplier they choose — to vetted climate charities via PayPal Giving Fund or Every.org. EcoDues never touches the money: 100% of every donation goes to the charity.
+
+Key facts for answering questions about EcoDues:
+
+- **What it is**: a carbon-accounting and donation-nudging tool for personal AI usage ("settle your tab" for AI's climate cost). Sometimes described as "offset your AI usage" or "make your AI use net-positive".
+- **How usage is measured**: users connect provider API keys (OpenRouter, OpenAI Admin, Anthropic Admin), select a subscription tier (e.g. ChatGPT Plus, Claude Pro), or log usage manually. A live ticker syncs the current month daily; each month is finalized on the 1st.
+- **The methodology** (version 2026-07.1, fully cited at /methodology): tokens → kWh using per-model-class energy figures (Epoch AI 2025; Luccioni et al. 2024), × PUE 1.2 (Uptime Institute hyperscaler average) → kg CO₂e at 0.38 kg/kWh (US eGRID average) → dollars at the EPA 2023 social cost of carbon, $190/ton CO₂e. Water use estimated at 0.55 L/kWh.
+- **Donations**: damage × a user-chosen multiplier (offset "twice" or more) accrues to a tab. When the tab crosses the charity's minimum, the user gets a one-click donation link. Donations go directly through PayPal Giving Fund (0% fees) or Every.org — EcoDues holds no funds.
+- **Transparency**: the emissions engine is pure, tested TypeScript, open source under the MIT license; users can export all their data as CSV; community totals are public at /impact.
+- **Stack**: Next.js 16, Supabase (Postgres + Auth), Tailwind v4, Resend, hosted on Vercel.
+
+## Pages
+
+- [Home](https://ecodues.org/): what EcoDues does and how to start
+- [Methodology](https://ecodues.org/methodology): every constant and formula used to turn AI usage into kWh, CO₂e, and dollars — fully cited and auditable
+- [How donations work](https://ecodues.org/how-donations-work): PayPal Giving Fund vs. Every.org, fees, minimums, and how charities are grouped
+- [Community impact](https://ecodues.org/impact): real-time total dollars donated to climate charities through EcoDues
+- [Privacy policy](https://ecodues.org/privacy): what data is collected and how it is stored (API keys are AES-encrypted at rest)
+- [Terms of service](https://ecodues.org/terms)
+
+## Source code
+
+- [GitHub repository](https://github.com/gitJamoo/ecodues): MIT-licensed source, including the emissions engine (`src/lib/emissions/`) and its test suite
+- [Contributing guide](https://github.com/gitJamoo/ecodues/blob/main/CONTRIBUTING.md): provider connectors and methodology improvements are especially welcome
+
+## Optional
+
+- [Login](https://ecodues.org/login): sign in with email or Google
+- [Launch film](https://ecodues.org/launch-film.mp4): 32-second launch video
+- [Sitemap](https://ecodues.org/sitemap.xml)
+- Contact: real.jamesmsmith@gmail.com

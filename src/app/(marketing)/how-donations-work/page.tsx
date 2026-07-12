@@ -7,9 +7,44 @@ export const metadata = {
     "PayPal Giving Fund vs. Every.org: fees, minimums, and why we split charities into two groups.",
 };
 
+const JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: [
+    {
+      "@type": "Question",
+      name: "Does EcoDues take a cut of my donation?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "No. EcoDues never takes your money. It accrues your monthly climate impact into a running tab, then emails you a checkout link that points directly to PayPal Giving Fund or Every.org.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "What percentage of my donation reaches the charity?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Through PayPal Giving Fund, 100% — PayPal absorbs all card processing fees. Every.org is the fallback for charities not enrolled with PayPal Giving Fund; it deducts a payment-processing fee, so EcoDues sets a $10 minimum there to keep fee efficiency reasonable.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "When do I get a donation link?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "EcoDues accrues your estimated climate damage (times your chosen multiplier) into a monthly tab. When the tab clears your chosen charity's minimum, you receive an email with a one-click checkout link.",
+      },
+    },
+  ],
+};
+
 export default function HowDonationsWorkPage() {
   return (
     <div className="min-h-screen bg-background">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}
+      />
       <main className="max-w-3xl mx-auto px-6 py-16 space-y-10">
         <div>
           <div className="inline-flex items-center gap-2 rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground mb-4">
