@@ -7,6 +7,10 @@
 
 Live at **[ecodues.org](https://ecodues.org)**.
 
+[![EcoDues launch film — Settle your tab](./public/launch-film-poster.jpg)](https://ecodues.org/launch-film.mp4)
+
+<p align="center"><a href="https://ecodues.org/launch-film.mp4">▶&nbsp; Watch the 32-second launch film</a></p>
+
 ## How it works
 
 1. **Connect** — link AI providers with an API key (OpenRouter, OpenAI, Anthropic admin keys), pick your subscription tier (ChatGPT Plus, Claude Pro, Copilot, Cursor, …), or log usage manually.

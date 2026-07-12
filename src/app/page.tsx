@@ -107,6 +107,27 @@ export default function Home() {
         ))}
       </section>
 
+      {/* Launch film */}
+      <section className="max-w-4xl mx-auto px-6 pb-24">
+        <div className="text-center mb-10">
+          <p className="text-xs font-medium text-primary uppercase tracking-widest mb-3">
+            The film
+          </p>
+          <h2 className="text-3xl font-semibold tracking-tight text-white">
+            Your tab, in 32 seconds
+          </h2>
+        </div>
+        <video
+          controls
+          preload="none"
+          playsInline
+          poster="/launch-film-poster.jpg"
+          className="w-full rounded-xl border border-white/10 bg-black/40 shadow-2xl"
+        >
+          <source src="/launch-film.mp4" type="video/mp4" />
+        </video>
+      </section>
+
       {/* About */}
       <section id="about" className="max-w-3xl mx-auto px-6 py-24">
         <div className="text-center mb-12">
