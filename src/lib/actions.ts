@@ -116,24 +116,38 @@ export async function addManualUsage(
   const outResult = tokensSchema.safeParse(outputTokens);
   if (!outResult.success) return { error: firstZodMessage(outResult.error) };
 
+  // Validate period format and range.
+  if (!/^\d{4}-\d{2}-01$/.test(period)) return { error: "Invalid period format." };
+  if (period < "2022-11-01") return { error: "Period is too far in the past." };
+  if (period > periodDateString(currentPeriod(new Date()))) return { error: "Cannot add usage for a future month." };
+
   if (DEV_MODE) return { ok: true };
   const { supabase, user } = await requireUser();
   if (!rateLimit(`usage:${user.id}`, 20, 60_000)) return { error: RATE_LIMITED_ERROR };
-  await supabase.from("usage_records").insert({
+  const { error } = await supabase.from("usage_records").insert({
     user_id: user.id, provider, model: "manual", period,
     input_tokens: inputTokens, output_tokens: outputTokens,
     spend_usd: spendUsd, source: "manual",
   });
+  if (error) {
+    logger.error("addManualUsage", "DB insert failed", { userId: user.id, provider, dbError: error.message });
+    return { error: "Couldn't save the usage record — try again." };
+  }
   revalidatePath("/dashboard");
   revalidatePath("/providers");
   return { ok: true };
 }
 
 export async function removeConnection(id: string) {
-  if (DEV_MODE) return;
-  const { supabase } = await requireUser();
-  await supabase.from("provider_connections").delete().eq("id", id);
+  if (DEV_MODE) return { ok: true };
+  const { supabase, user } = await requireUser();
+  const { error } = await supabase.from("provider_connections").delete().eq("id", id).eq("user_id", user.id);
+  if (error) {
+    logger.error("removeConnection", "DB delete failed", { userId: user.id, connectionId: id, dbError: error.message });
+    return { error: "Couldn't remove the connection — try again." };
+  }
   revalidatePath("/providers");
+  return { ok: true };
 }
 
 export async function saveSettings(form: {
@@ -162,7 +176,11 @@ export async function saveSettings(form: {
   if (form.emailOptOut !== undefined) patch.email_opt_out = form.emailOptOut;
   if (form.leaderboardOptIn !== undefined) patch.leaderboard_opt_in = form.leaderboardOptIn;
   if (form.showPlansInSources !== undefined) patch.show_plans_in_sources = form.showPlansInSources;
-  await supabase.from("profiles").update(patch).eq("id", user.id);
+  const { error } = await supabase.from("profiles").update(patch).eq("id", user.id);
+  if (error) {
+    logger.error("saveSettings", "DB update failed", { userId: user.id, dbError: error.message });
+    return { error: "Couldn't save settings — try again." };
+  }
   revalidatePath("/settings");
   revalidatePath("/dashboard");
   return { ok: true };
@@ -185,9 +203,15 @@ export async function deleteAccount() {
 export async function completeOnboarding() {
   if (DEV_MODE) return { ok: true, donationUsd: 0 };
   const { supabase, user } = await requireUser();
+
+  // Guard against double-submit: only send the welcome email on the first call.
+  const { data: existing } = await supabase
+    .from("profiles").select("onboarded_at").eq("id", user.id).single();
+  const alreadyOnboarded = !!existing?.onboarded_at;
+
   await supabase.from("profiles").update({ onboarded_at: new Date().toISOString() }).eq("id", user.id);
 
-  if (user.email) {
+  if (!alreadyOnboarded && user.email) {
     const { data: profile } = await supabase.from("profiles").select("display_name").eq("id", user.id).single();
     await sendEmail({
       to: user.email,
@@ -224,10 +248,20 @@ export async function updateUsageRecord(id: string, patch: {
     const r = spendSchema.safeParse(patch.spend_usd);
     if (!r.success) return { error: firstZodMessage(r.error) };
   }
+  if (patch.provider !== undefined && (typeof patch.provider !== "string" || patch.provider.length > 64)) {
+    return { error: "Invalid provider." };
+  }
+  if (patch.model !== undefined && (typeof patch.model !== "string" || patch.model.length > 64)) {
+    return { error: "Invalid model name." };
+  }
 
   if (DEV_MODE) return { ok: true };
   const { supabase, user } = await requireUser();
-  await supabase.from("usage_records").update(patch).eq("id", id).eq("user_id", user.id);
+  const { error } = await supabase.from("usage_records").update(patch).eq("id", id).eq("user_id", user.id);
+  if (error) {
+    logger.error("updateUsageRecord", "DB update failed", { userId: user.id, recordId: id, dbError: error.message });
+    return { error: "Couldn't update the record — try again." };
+  }
   revalidatePath("/dashboard");
   return { ok: true };
 }
@@ -252,13 +286,15 @@ export async function logPayment(form: {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("pending_donation_usd, charity_id")
+    .select("charity_id")
     .eq("id", user.id)
     .single();
 
   const charityId = form.charityId ?? profile?.charity_id ?? null;
 
-  await supabase.from("donation_payments").insert({
+  // Record the payment first — only decrement the tab if this succeeds so we
+  // never reduce the balance without an audit trail.
+  const { error: insertError } = await supabase.from("donation_payments").insert({
     user_id: user.id,
     charity_id: charityId,
     amount_usd: amount,
@@ -266,9 +302,19 @@ export async function logPayment(form: {
     external_id: form.externalId ?? null,
     notes: form.notes ?? null,
   });
+  if (insertError) {
+    logger.error("logPayment", "donation_payments insert failed", { userId: user.id, dbError: insertError.message });
+    return { error: "Couldn't record the payment — try again." };
+  }
 
-  const nextTab = Math.max(0, Number(profile?.pending_donation_usd ?? 0) - amount);
-  await supabase.from("profiles").update({ pending_donation_usd: nextTab }).eq("id", user.id);
+  // Atomically decrement the tab to prevent race conditions on concurrent calls.
+  const { data: nextTabRaw, error: rpcError } = await supabase
+    .rpc("decrement_pending_donation", { p_user_id: user.id, p_amount: amount });
+  if (rpcError || nextTabRaw === null) {
+    logger.error("logPayment", "Tab decrement RPC failed", { userId: user.id, rpcError: rpcError?.message });
+    return { error: "Couldn't update your balance — try again." };
+  }
+  const nextTab = Number(nextTabRaw);
 
   if (nextTab === 0) {
     await supabase

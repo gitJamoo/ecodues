@@ -38,6 +38,9 @@ export type KnownProviderId =
   | "ibm_watsonx"
   | "cerebras"
   | "sambanova"
+  // Productivity / enterprise AI
+  | "microsoft_copilot"
+  | "notion_ai"
   // Catch-all — user-typed provider name
   | "other";
 

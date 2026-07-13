@@ -6,8 +6,10 @@ export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const uid = searchParams.get("uid");
   const token = searchParams.get("token");
+  const expStr = searchParams.get("exp");
+  const expiry = expStr ? Number(expStr) : 0;
 
-  if (!uid || !token || !verifyUnsubscribeToken(uid, token)) {
+  if (!uid || !token || !expStr || !Number.isInteger(expiry) || !verifyUnsubscribeToken(uid, token, expiry)) {
     return new Response("Invalid or missing unsubscribe token.", {
       status: 400,
       headers: { "Content-Type": "text/plain" },

@@ -72,20 +72,25 @@ export async function runMonthlyCycleForUser(
 
   const { data: connections } = await supabase.from("provider_connections").select("*").eq("user_id", userId);
 
-  // Refresh API + tier usage (manual and backfill rows stay)
-  await supabase.from("usage_records").delete()
-    .eq("user_id", userId).eq("period", periodDate).in("source", ["api", "tier_estimate"]);
+  // Collect all new rows BEFORE deleting old ones so a connector outage does
+  // not wipe data we already have for that month — we only delete once all
+  // fetches have completed (success or error).
+  const newRows: Array<{
+    user_id: string; provider: string; model: string; period: string;
+    input_tokens: number; output_tokens: number; spend_usd: number;
+    source: string; connection_id: string;
+  }> = [];
 
   for (const conn of connections ?? []) {
     if (conn.kind === "api_key" && conn.encrypted_key) {
       try {
         const rows = await connectorFor(conn.provider).fetchMonthlyUsage(decryptSecret(conn.encrypted_key), period);
-        if (rows.length) {
-          await supabase.from("usage_records").insert(rows.map(r => ({
+        for (const r of rows) {
+          newRows.push({
             user_id: userId, provider: conn.provider, model: r.model, period: periodDate,
             input_tokens: Math.round(r.inputTokens), output_tokens: Math.round(r.outputTokens),
             spend_usd: r.spendUsd, source: "api", connection_id: conn.id,
-          })));
+          });
         }
         if (conn.status !== "active") {
           await supabase.from("provider_connections").update({ status: "active" }).eq("id", conn.id);
@@ -102,7 +107,7 @@ export async function runMonthlyCycleForUser(
       const pct = pctStr ? Math.min(1, Math.max(0, Number(pctStr) / 100)) : 1;
       const t = tierById(baseTierId);
       if (t) {
-        await supabase.from("usage_records").insert({
+        newRows.push({
           user_id: userId, provider: conn.provider, model: t.id, period: periodDate,
           input_tokens: Math.round(t.monthlyInputTokens * pct * tierFraction),
           output_tokens: Math.round(t.monthlyOutputTokens * pct * tierFraction),
@@ -110,6 +115,14 @@ export async function runMonthlyCycleForUser(
         });
       }
     }
+  }
+
+  // Safe to delete now — all connector fetches are complete.
+  await supabase.from("usage_records").delete()
+    .eq("user_id", userId).eq("period", periodDate).in("source", ["api", "tier_estimate"]);
+
+  if (newRows.length) {
+    await supabase.from("usage_records").insert(newRows);
   }
 
   return settlePeriodForUser(supabase, userId, period);
@@ -155,12 +168,17 @@ export async function settlePeriodForUser(
     // subtract the old amount before adding the new one so the tab stays true.
     const { data: prior } = await supabase
       .from("donation_ledger")
-      .select("donation_usd")
+      .select("donation_usd, status")
       .eq("user_id", userId)
       .eq("period", periodDate)
       .maybeSingle();
     const prevAmount = Number(prior?.donation_usd ?? 0);
+    const prevStatus = (prior?.status as string | null) ?? null;
     const delta = result.donationUsd - prevAmount;
+
+    // Preserve status if the period is already settled — don't clobber "paid"
+    // rows back to "accrued" when the monthly cron re-finalizes the period.
+    const newStatus = prevStatus === "paid" || prevStatus === "partially_paid" ? prevStatus : "accrued";
 
     await supabase.from("donation_ledger").upsert({
       user_id: userId, period: periodDate,
@@ -168,7 +186,7 @@ export async function settlePeriodForUser(
       multiplier: Number(profile?.multiplier ?? 2),
       donation_usd: result.donationUsd,
       charity_id: profile?.charity_id ?? null,
-      status: "accrued",
+      status: newStatus,
     }, { onConflict: "user_id,period" });
 
     if (delta !== 0) {

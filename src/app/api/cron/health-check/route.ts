@@ -70,6 +70,7 @@ export async function GET(request: NextRequest) {
   const base = process.env.NEXT_PUBLIC_SITE_URL ?? "https://ecodues.org";
   const reconnectUrl = `${base}/providers`;
   let emailed = 0;
+  let emailsFailed = 0;
 
   for (const [userId, brokenProviders] of brokenByUser) {
     const { data: authData } = await supabase.auth.admin.getUserById(userId);
@@ -90,12 +91,18 @@ export async function GET(request: NextRequest) {
       reconnectUrl,
     });
     const sent = await sendEmail({ to: email, ...rendered, unsubscribeUrl: unsubscribeUrl(userId) });
-    if (sent) emailed++;
+    if (sent) {
+      emailed++;
+    } else {
+      emailsFailed++;
+      console.error("[health-check] sendEmail failed for user", userId, "providers:", brokenProviders);
+    }
   }
 
   return NextResponse.json({
     checked,
     broken,
     usersNotified: emailed,
+    emailsFailed,
   });
 }

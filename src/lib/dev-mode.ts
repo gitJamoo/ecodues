@@ -1,6 +1,14 @@
 // Set DEV_MODE=true in .env.local to bypass Supabase auth entirely.
 // Never set this in production.
-export const DEV_MODE = process.env.DEV_MODE === "true";
+export const DEV_MODE = (() => {
+  const enabled = process.env.DEV_MODE === "true";
+  if (enabled && process.env.NODE_ENV === "production") {
+    throw new Error(
+      "DEV_MODE=true is not allowed in production. Remove DEV_MODE from your Vercel environment variables.",
+    );
+  }
+  return enabled;
+})();
 
 export const DEV_USER = {
   id: "dev-user-00000000-0000-0000-0000-000000000000",

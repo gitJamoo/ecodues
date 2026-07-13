@@ -79,7 +79,10 @@ export const anthropic: ProviderConnector = {
 
     const [usageBuckets, costBuckets] = await Promise.all([
       fetchAll<UsageBucket>(usageUrl, apiKey),
-      fetchAll<CostBucket>(costUrl, apiKey).catch(() => [] as CostBucket[]),
+      fetchAll<CostBucket>(costUrl, apiKey).catch((err) => {
+        console.error("[anthropic] cost_report fetch failed — costs will be estimated from tokens:", err instanceof Error ? err.message : String(err));
+        return [] as CostBucket[];
+      }),
     ]);
 
     const byModel = new Map<string, MonthlyUsage>();

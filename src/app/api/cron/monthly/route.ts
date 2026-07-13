@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
       // Reload the profile — cycle just wrote the new tab balance.
       const { data: profile } = await supabase
         .from("profiles")
-        .select("id, display_name, charity_id, pending_donation_usd, email_opt_out")
+        .select("id, display_name, charity_id, pending_donation_usd, email_opt_out, last_reminder_period")
         .eq("id", p.id)
         .single();
 
@@ -64,6 +64,13 @@ export async function GET(request: NextRequest) {
 
       if (!email || profile?.email_opt_out) {
         results[p.id] = { donation: cycle.donationUsd, variant, emailed };
+        continue;
+      }
+
+      // Idempotency: skip users already emailed for this period so a cron retry
+      // doesn't send duplicate threshold / recap emails.
+      if (profile?.last_reminder_period === periodDate) {
+        results[p.id] = { donation: cycle.donationUsd, variant: "none", emailed: false };
         continue;
       }
 
@@ -126,5 +133,10 @@ export async function GET(request: NextRequest) {
       results[p.id] = { donation: -1, variant: "none", emailed: false };
     }
   }
-  return NextResponse.json({ period, users: Object.keys(results).length, results });
+  return NextResponse.json({
+    period,
+    users: Object.keys(results).length,
+    emailed: Object.values(results).filter(r => r.emailed).length,
+    errors: Object.values(results).filter(r => r.donation === -1).length,
+  });
 }

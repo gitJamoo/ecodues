@@ -66,6 +66,19 @@ export const TIER_ESTIMATES: TierEstimate[] = [
 
   // ── Meta AI (free but recurring usage) ──
   { id: "meta_ai_free",       provider: "meta_ai",        label: "Meta AI (WhatsApp/IG)", monthlyInputTokens: 0.3 * M, monthlyOutputTokens: 0.1 * M, modelClass: "medium" },
+
+  // ── Anthropic Claude Team ──
+  { id: "claude_team",        provider: "anthropic",      label: "Claude Team ($25/seat)", monthlyInputTokens: 3 * M,   monthlyOutputTokens: 1 * M,   modelClass: "medium" },
+
+  // ── OpenAI ChatGPT Enterprise ──
+  { id: "chatgpt_enterprise", provider: "openai",         label: "ChatGPT Enterprise", monthlyInputTokens: 5 * M,   monthlyOutputTokens: 1.8 * M, modelClass: "large" },
+
+  // ── Microsoft 365 Copilot ──
+  { id: "microsoft_copilot_personal", provider: "microsoft_copilot", label: "Copilot Personal ($20)", monthlyInputTokens: 1.5 * M, monthlyOutputTokens: 0.4 * M, modelClass: "medium" },
+  { id: "microsoft_copilot_business", provider: "microsoft_copilot", label: "M365 Copilot ($30/seat)", monthlyInputTokens: 3 * M,   monthlyOutputTokens: 0.8 * M, modelClass: "medium" },
+
+  // ── Notion AI ──
+  { id: "notion_ai_bundled",  provider: "notion_ai",      label: "Notion AI (bundled with plan)", monthlyInputTokens: 0.8 * M, monthlyOutputTokens: 0.3 * M, modelClass: "medium" },
 ];
 
 export const tierById = (id: string) => TIER_ESTIMATES.find(t => t.id === id.split(":")[0]);

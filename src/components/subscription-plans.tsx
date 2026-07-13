@@ -58,7 +58,9 @@ function PlanRow({ conn }: { conn: TierConnection }) {
 
   async function remove() {
     setRemoving(true);
-    await removeConnection(conn.id);
+    const result = await removeConnection(conn.id);
+    setRemoving(false);
+    if (result?.error) { toast.error(result.error); return; }
     toast.success("Plan removed");
     router.refresh();
   }

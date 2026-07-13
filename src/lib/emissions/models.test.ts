@@ -21,10 +21,31 @@ describe("classifyModel", () => {
     expect(classifyModel("deep-research")).toBe("frontier");
   });
 
+  it("classifies reasoning mini models as medium, not small", () => {
+    expect(classifyModel("o1-mini")).toBe("medium");
+    expect(classifyModel("o3-mini")).toBe("medium");
+    expect(classifyModel("o4-mini")).toBe("medium");
+  });
+
+  it("classifies regular mini/small models as small", () => {
+    expect(classifyModel("gpt-4o-mini")).toBe("small");
+    expect(classifyModel("gpt-4.1-mini")).toBe("small");
+  });
+
+  it("classifies embedding models as small", () => {
+    expect(classifyModel("text-embedding-3-large")).toBe("small");
+    expect(classifyModel("text-embedding-ada-002")).toBe("small");
+    expect(classifyModel("embed-english-v3.0")).toBe("small");
+  });
+
   it("classifies large models", () => {
     expect(classifyModel("claude-opus-4-8")).toBe("large");
     expect(classifyModel("gpt-4-turbo")).toBe("large");
     expect(classifyModel("llama-3.1-405b")).toBe("large");
+    expect(classifyModel("deepseek-r1")).toBe("large");
+    expect(classifyModel("deepseek-v3")).toBe("large");
+    expect(classifyModel("mistral-large-latest")).toBe("large");
+    expect(classifyModel("llama-4-maverick-17b")).toBe("large");
   });
 
   it("classifies medium models", () => {
@@ -32,11 +53,12 @@ describe("classifyModel", () => {
     expect(classifyModel("claude-sonnet-4-6")).toBe("medium");
     expect(classifyModel("gemini-1.5-pro")).toBe("medium");
     expect(classifyModel("deepseek-chat")).toBe("medium");
+    expect(classifyModel("mistral-small-latest")).toBe("medium");
+    expect(classifyModel("llama-4-scout-17b")).toBe("medium");
   });
 
-  it("small beats frontier/large when both match (pattern order)", () => {
-    // "mini" pattern is checked before the o1/o3 pattern
-    expect(classifyModel("o4-mini")).toBe("small");
+  it("deepseek-r1 distilled small sizes stay small (size tag wins)", () => {
+    expect(classifyModel("deepseek-r1-distill-qwen-7b")).toBe("small");
   });
 
   it("falls back to medium for unknown strings", () => {

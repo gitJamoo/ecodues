@@ -23,12 +23,14 @@ export const openrouter: ProviderConnector = {
   async fetchMonthlyUsage(apiKey, period) {
     const res = await fetch("https://openrouter.ai/api/v1/activity", {
       headers: { Authorization: `Bearer ${apiKey}` },
+      cache: "no-store",
     });
     if (!res.ok) throw new Error(`OpenRouter activity failed: ${res.status}`);
-    const { data } = (await res.json()) as { data: ActivityRow[] };
+    const json = (await res.json()) as { data?: ActivityRow[] };
+    const data = json.data ?? [];
     const prefix = `${period.year}-${String(period.month).padStart(2, "0")}-`;
     const byModel = new Map<string, MonthlyUsage>();
-    for (const row of data ?? []) {
+    for (const row of data) {
       if (!row.date?.startsWith(prefix)) continue;
       const agg = byModel.get(row.model) ?? { model: row.model, inputTokens: 0, outputTokens: 0, spendUsd: 0 };
       agg.inputTokens += row.prompt_tokens ?? 0;

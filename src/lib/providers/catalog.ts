@@ -412,6 +412,32 @@ export const PROVIDER_CATALOG: ProviderMeta[] = [
     apiKeySupported: false,
   },
 
+  // ── PRODUCTIVITY / ENTERPRISE ─────────────────────────────────────────
+  {
+    id: "microsoft_copilot",
+    label: "Microsoft 365 Copilot",
+    category: "coding",
+    featured: false,
+    color: "bg-sky-50 border-sky-200 dark:bg-sky-950/40 dark:border-sky-900/60",
+    dashboardUrl: "https://admin.microsoft.com/Adminportal/Home#/copilot",
+    dashboardLabel: "Microsoft 365 admin",
+    usageHint: "M365 Copilot bundles GPT-4o into Word, Excel, Outlook, Teams. Pick your plan for an estimate.",
+    apiKeySupported: false,
+    hasTiers: true,
+  },
+  {
+    id: "notion_ai",
+    label: "Notion AI",
+    category: "coding",
+    featured: false,
+    color: "bg-neutral-50 border-neutral-200 dark:bg-neutral-900/50 dark:border-neutral-800",
+    dashboardUrl: "https://www.notion.so/billing",
+    dashboardLabel: "notion.so/billing",
+    usageHint: "Notion AI is bundled into paid plans. Pick your plan for an estimate.",
+    apiKeySupported: false,
+    hasTiers: true,
+  },
+
   // ── Freeform catch-all ─────────────────────────────────────────────────
   {
     id: "other",

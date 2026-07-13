@@ -130,8 +130,9 @@ export function ProviderConnect({ connections, periodMode = "current" }: {
     const p = parsed[pid];
     if (!p) return;
     setLoading(pid + "_paste");
-    await addManualUsage(pid as never, period, p.spendUsd, p.inputTokens, p.outputTokens);
+    const result = await addManualUsage(pid as never, period, p.spendUsd, p.inputTokens, p.outputTokens);
     setLoading(null);
+    if (result?.error) { toast.error(result.error); return; }
     toast.success("Usage recorded from pasted statement");
     setPasteText(t => ({ ...t, [pid]: "" }));
     setParsed(q => ({ ...q, [pid]: null }));
@@ -139,7 +140,8 @@ export function ProviderConnect({ connections, periodMode = "current" }: {
   }
 
   async function handleRemove(id: string) {
-    await removeConnection(id);
+    const result = await removeConnection(id);
+    if (result?.error) { toast.error(result.error); return; }
     toast.success("Connection removed");
   }
 

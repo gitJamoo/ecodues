@@ -21,6 +21,14 @@ interface CostBucket {
     line_item?: string | null;
   }[];
 }
+interface EmbeddingsBucket {
+  start_time: number;
+  end_time: number;
+  results: {
+    input_tokens?: number;
+    model?: string;
+  }[];
+}
 
 function monthRange(period: Period): { startSec: number; endSec: number } {
   const start = Date.UTC(period.year, period.month - 1, 1) / 1000;
@@ -72,13 +80,18 @@ export const openai: ProviderConnector = {
       `&bucket_width=1d&group_by=model&limit=31`;
     const costUrl =
       `${base}/costs?start_time=${startSec}&end_time=${endSec}&bucket_width=1d&limit=31`;
+    const embeddingsUrl =
+      `${base}/usage/embeddings?start_time=${startSec}&end_time=${endSec}` +
+      `&bucket_width=1d&group_by=model&limit=31`;
 
-    const [usageBuckets, costBuckets] = await Promise.all([
+    const [usageBuckets, costBuckets, embeddingBuckets] = await Promise.all([
       fetchAll<UsageBucket>(usageUrl, apiKey),
       fetchAll<CostBucket>(costUrl, apiKey),
+      // Embedding usage may be absent for API keys without embedding usage — treat as optional
+      fetchAll<EmbeddingsBucket>(embeddingsUrl, apiKey).catch(() => [] as EmbeddingsBucket[]),
     ]);
 
-    // Aggregate tokens by model
+    // Aggregate completion tokens by model
     const byModel = new Map<string, MonthlyUsage>();
     for (const b of usageBuckets) {
       for (const r of b.results ?? []) {
@@ -91,20 +104,31 @@ export const openai: ProviderConnector = {
     }
 
     // Costs come without per-model breakdown — total the org cost and split
-    // proportionally by that model's token share, so each row's spendUsd is
-    // an estimate rather than the true SKU price.
+    // proportionally by completion token share. Embedding costs are included in
+    // the org total but embedding models are tracked separately below with
+    // spendUsd=0, so the emissions engine uses token-based estimation for them.
     const totalCost = costBuckets.reduce(
       (s, b) => s + (b.results ?? []).reduce((a, r) => a + (r.amount?.value ?? 0), 0),
       0,
     );
-    const totalTokens = [...byModel.values()].reduce(
+    const totalCompletionTokens = [...byModel.values()].reduce(
       (s, m) => s + m.inputTokens + m.outputTokens,
       0,
     );
-    if (totalTokens > 0 && totalCost > 0) {
+    if (totalCompletionTokens > 0 && totalCost > 0) {
       for (const m of byModel.values()) {
-        const share = (m.inputTokens + m.outputTokens) / totalTokens;
+        const share = (m.inputTokens + m.outputTokens) / totalCompletionTokens;
         m.spendUsd = totalCost * share;
+      }
+    }
+
+    // Merge embedding models — input tokens only, zero spend (estimated from tokens)
+    for (const b of embeddingBuckets) {
+      for (const r of b.results ?? []) {
+        const model = r.model ?? "text-embedding-unknown";
+        const agg = byModel.get(model) ?? { model, inputTokens: 0, outputTokens: 0, spendUsd: 0 };
+        agg.inputTokens += r.input_tokens ?? 0;
+        byModel.set(model, agg);
       }
     }
 

@@ -32,9 +32,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // We only care about successful charges
+  // Only process confirmed payments — donation.created fires before payment
+  // processing and the card can still decline, so we must not mark as paid yet.
   const type = body.type as string | undefined;
-  if (type !== "donation.succeeded" && type !== "donation.created") {
+  if (type !== "donation.succeeded") {
     return NextResponse.json({ ok: true, ignored: true });
   }
 
